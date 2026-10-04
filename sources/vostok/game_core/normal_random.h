@@ -12,7 +12,7 @@ public:
 
 			float		rand_n			( float sigma );
 
-	inline	void		set_seed		( const s32 arg_0 ) { /* no source */ }
+	inline	void		set_seed		( const s32 arg_0 ) { m_seed = arg_0; }
 	inline	s32			seed			( ) const { return m_seed; }
 
 private:
