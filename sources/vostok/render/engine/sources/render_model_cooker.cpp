@@ -741,7 +741,8 @@ void arrange_surfaces_by_lod(
 			result_lod_surfaces_count[lod_index]
 		);
 		surfaces_shift += result_lod_surfaces_count[lod_index];
-		DELETE_ARRAY( result_lod_surfaces[lod_index] );
+		if ( result_lod_surfaces[lod_index] )
+			DELETE_ARRAY( result_lod_surfaces[lod_index] );
 	}
 }
 
