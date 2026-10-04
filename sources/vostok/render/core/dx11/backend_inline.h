@@ -177,7 +177,7 @@ inline void backend::set_ps_textures( res_texture_list* textures )
 
 inline void backend::set_vs_texture( pcstr name, res_texture* texture )
 {
-	m_dirty_objects.vertex_textures |= m_vs_textures_handler.set_overwrite( name, texture );
+	m_dirty_objects.vertex_textures = m_vs_textures_handler.set_overwrite( name, texture );
 }
 
 inline void backend::set_gs_texture( pcstr name, res_texture* texture )
