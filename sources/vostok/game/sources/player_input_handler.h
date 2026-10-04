@@ -60,7 +60,7 @@ private:
 										s32					z
 									) override;
 
-	virtual	s32						input_priority				( ) override { /* no source */ return 0; }
+	virtual	s32						input_priority				( ) override { return 10; }
 
 	// target mangling: ?on_before_processing@...@@EAEXPAUworld@input@vostok@@I@Z -
 	// the shipped input::handler interface passes (world*, u32); our legacy
