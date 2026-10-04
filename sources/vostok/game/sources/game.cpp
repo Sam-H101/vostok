@@ -1005,7 +1005,7 @@ void scaleform_movie_cook::on_raw_data_loaded( resources::queries_result& data, 
 
 	flash_movie_resource* const resource	= VOSTOK_NEW_IMPL( ::survarium::g_allocator, flash_movie_resource );
 
-	resource->movie					= m_factory.build_movie( (void*)pinned.c_ptr( ), pinned.size( ), parent->reusable_request_name( ).c_str( ) );
+	resource->movie					= m_factory.build_movie( (void*)pinned.c_ptr( ), pinned.size( ), raw_data->reusable_request_name( ).c_str( ) );
 
 	parent->set_unmanaged_resource	( resource, resources::nocache_memory, 0x110 );
 	parent->finish_query			( result_success );
