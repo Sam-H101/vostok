@@ -9,6 +9,7 @@
 #include <vostok/scaleform/sources/flash_external_handler.h>
 #include <vostok/scaleform/sources/flash_movie_resource.h>
 #include "game_action_id.h"	// the canonical dump inlines the enum here; it lives in its own header
+#include "options_tab.h"
 
 namespace vostok {
 namespace resources {
@@ -86,7 +87,7 @@ public:
 
 			void					refill_item_data			( u8 options_tab_id, u8 options_item_id );
 
-	inline	options_item_base*		get_options_item			( u8 arg_0, u8 arg_1 ) { /* no source */ return NULL; }
+	inline	options_item_base*		get_options_item			( u8 arg_0, u8 arg_1 ) { return m_options[ arg_0 ]->option_by_id( arg_1 ); }
 
 private:
 			void					on_resources_ready			( resources::queries_result& data );
