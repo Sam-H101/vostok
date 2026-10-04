@@ -369,16 +369,16 @@ void game_options::fill_settings_data( )
 		u8 options_count = 0;
 		switch ( i )
 		{
-			case 0:
+			case gameplay_options_type:
 				options_labels = gameplay_options_labels, options_count = 9;
 				break;
-			case 1:
+			case video_options_type:
 				options_labels = video_options_labels, options_count = 19;
 				break;
-			case 2:
+			case sound_options_type:
 				options_labels = sound_options_labels, options_count = 7;
 				break;
-			case 3:
+			case controllers_options_type:
 				options_labels = controllers_options_labels, options_count = 2;
 				break;
 		}
