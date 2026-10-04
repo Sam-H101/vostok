@@ -185,7 +185,16 @@ void   archive_mounter::mount_fat		(archive_folder_mount_root_node<> *	mount_roo
 	m_mount_root_base->physical_path	=	mount_root->fat_path_holder;
 
 	if ( m_args.submount_type == submount_type_automatic_archive )
+	{
 		mount_root->node->set_name			(m_args.submount_node->get_name());
+	}
+	else if ( m_args.submount_type == submount_type_unset )
+	{
+		pcstr const last_slash			=	strrchr(mount_root->virtual_path_holder, '/');
+		pcstr const name				=	last_slash ? last_slash + 1 : mount_root->virtual_path_holder;
+
+		mount_root->node->set_name			(name);
+	}
 
 	u32	const hash						=	path_crc32(m_args.virtual_path);
 
