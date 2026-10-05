@@ -283,11 +283,11 @@ float n_ary_tree::computed_animation_time(
 	const float					time_scale
 ) const
 {
-	if ( !animation.time_calculator() ) return	animation_time_before_scale_starts + (current_time_in_ms - time_scale_start_time_in_ms)*time_scale/1000.f;
+	if ( !animation.time_calculator() ) return	animation_time_before_scale_starts + (target_time_in_ms - time_scale_start_time_in_ms)*time_scale/1000.f;
 
 	return						animation.time_calculator()(
-										animation_time_before_scale_starts,
 										animation.animation_intervals()->length(),
+										animation_time_before_scale_starts,
 										time_scale_start_time_in_ms,
 										current_time_in_ms,
 										target_time_in_ms,
@@ -338,8 +338,8 @@ void n_ary_tree::update_synchronization_group_using_integration(
 			animation_node,
 			accumulated_animation_time,
 			start_time_in_ms + i*integration_interval_length_in_ms,
-			i < full_intervals_count ? start_time_in_ms + ( i + 1 )*integration_interval_length_in_ms : target_time_in_ms,
 			start_time_in_ms + i*integration_interval_length_in_ms,
+			i < full_intervals_count ? start_time_in_ms + ( i + 1 )*integration_interval_length_in_ms : target_time_in_ms,
 			is_time_scale_node ? time_scale_calculator.time_scale( ) : 1.f
 		);
 		accumulated_animation_time		=
