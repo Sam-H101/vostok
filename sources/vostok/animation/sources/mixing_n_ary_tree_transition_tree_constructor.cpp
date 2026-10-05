@@ -651,10 +651,11 @@ n_ary_tree_animation_node* n_ary_tree_transition_tree_constructor::new_weight_dr
 {
 	base_interpolator const& interpolator	= animation.weight_interpolator( );
 	n_ary_tree_base_node** const operands_begin	= animation.operands( sizeof( n_ary_tree_animation_node ) );
-	u32 operands_offset						= animation.operands_count( )
+	u32 const has_time_scale_node			= animation.operands_count( )
 		? (*operands_begin)->is_time_scale( )
 		: false;
-	u32 weight_operands_count				= animation.operands_count( ) - operands_offset
+	u32 operands_offset						= has_time_scale_node;
+	u32 const weight_operands_count			= animation.operands_count( ) - operands_offset
 		+ ( interpolator.transition_time( ) != 0.f ? 1 : 0 );
 
 	u32 time_scale_operands_count;
@@ -675,22 +676,22 @@ n_ary_tree_animation_node* n_ary_tree_transition_tree_constructor::new_weight_dr
 
 	n_ary_tree_base_node** new_operands		=
 		static_cast< n_ary_tree_base_node** >( m_buffer.c_ptr( ) ) + time_scale_operands_count;
-	m_buffer								+= ( time_scale_operands_count + operands_offset )
+	m_buffer								+= ( weight_operands_count + operands_offset )
 		* sizeof( n_ary_tree_base_node* );
 
 	n_ary_tree_base_node** const operands_end	=
 		operands_begin + animation.operands_count( );
 	n_ary_tree_base_node** i					=
-		operands_begin + ( operands_offset ? time_scale_operands_count : 0 );
+		operands_begin + ( has_time_scale_node ? time_scale_operands_count : 0 );
 
-	n_ary_tree_weight_node temp				( interpolator, 0.f );
+	n_ary_tree_weight_node temp				( interpolator, 1.f );
 	n_ary_tree_node_comparer comparer;
 	for ( ; i != operands_end; ++i ) {
 		if ( comparer.compare( **i, temp ) == vostok::animation::more )
 			break;
 
 		if ( (*i)->is_time_scale( ) )
-			*new_operands++					= m_cloner.clone( **i, 0.f );
+			*new_operands++					= m_cloner.clone( **i, 1.f );
 		else
 			*new_operands++					= m_cloner.clone( **i );
 	}
