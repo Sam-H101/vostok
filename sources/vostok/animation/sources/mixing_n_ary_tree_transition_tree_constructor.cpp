@@ -877,7 +877,7 @@ n_ary_tree_base_node* n_ary_tree_transition_tree_constructor::new_weight_transit
 		base_interpolator const* const cloned_interpolator	= m_cloner.clone( from_animation_interpolator );
 		n_ary_tree_base_node* const result	= (n_ary_tree_base_node*)m_buffer.c_ptr( );
 		m_buffer				+= sizeof( n_ary_tree_weight_node );
-		new ( result ) n_ary_tree_weight_node( *cloned_interpolator, 0.f );
+		new ( result ) n_ary_tree_weight_node( *cloned_interpolator, to );
 
 		return				result;
 	}
@@ -894,7 +894,7 @@ n_ary_tree_base_node* n_ary_tree_transition_tree_constructor::new_weight_transit
 
 	n_ary_tree_base_node* const weight_to	= (n_ary_tree_base_node*)m_buffer.c_ptr( );
 	m_buffer				+= sizeof( n_ary_tree_weight_node );
-	new ( weight_to ) n_ary_tree_weight_node( *cloned_interpolator, 0.f );
+	new ( weight_to ) n_ary_tree_weight_node( *cloned_interpolator, to );
 
 	new ( result ) n_ary_tree_weight_transition_node(
 		*cloned_from,
@@ -912,8 +912,8 @@ n_ary_tree_base_node* n_ary_tree_transition_tree_constructor::new_weight_transit
 	if ( weight_to_node.interpolator( ).transition_time( ) == 0.f )
 		return				m_cloner.clone( to );
 
-	n_ary_tree_weight_node	weight( to_animation_interpolator, 0.f );
-	if ( n_ary_tree_node_comparer( ).compare( weight_to_node, weight ) == vostok::animation::equal )
+	n_ary_tree_weight_node	weight( to_animation_interpolator, from );
+	if ( n_ary_tree_node_comparer( ).compare( weight, weight_to_node ) == vostok::animation::equal )
 		return				m_cloner.clone( to );
 
 	n_ary_tree_base_node* const result	= (n_ary_tree_base_node*)m_buffer.c_ptr( );
@@ -927,7 +927,7 @@ n_ary_tree_base_node* n_ary_tree_transition_tree_constructor::new_weight_transit
 
 	n_ary_tree_base_node* const weight_from	= (n_ary_tree_base_node*)m_buffer.c_ptr( );
 	m_buffer				+= sizeof( n_ary_tree_weight_node );
-	new ( weight_from ) n_ary_tree_weight_node( *cloned_interpolator, 0.f );
+	new ( weight_from ) n_ary_tree_weight_node( *cloned_interpolator, from );
 
 	new ( result ) n_ary_tree_weight_transition_node(
 		*weight_from,
@@ -994,16 +994,16 @@ void n_ary_tree_transition_tree_constructor::add_operands(
 		base_interpolator const* const j_interpolator	= interpolator_selector.result( );
 		switch ( vostok::animation::compare( *i_interpolator, *j_interpolator ) ) {
 			case vostok::animation::equal :
-				*operands++			= new_weight_transition( **j, **i );
+				*operands++			= new_weight_transition( **i, **j );
 				++i;
 				++j;
 				break;
 			case vostok::animation::less :
-				*operands++			= new_weight_transition( *i_interpolator, **i, 0.f );
+				*operands++			= new_weight_transition( *i_interpolator, **i, 1.f );
 				++i;
 				break;
 			case vostok::animation::more :
-				*operands++			= new_weight_transition( *j_interpolator, 0.f, **j );
+				*operands++			= new_weight_transition( *j_interpolator, 1.f, **j );
 				++j;
 				break;
 			default : NODEFAULT( );
@@ -1011,10 +1011,10 @@ void n_ary_tree_transition_tree_constructor::add_operands(
 	}
 
 	for ( ; i != i_e; ++i )
-		*operands++			= new_weight_transition( from_interpolator, **i, 0.f );
+		*operands++			= new_weight_transition( from.weight_interpolator( ), **i, 1.f );
 
 	for ( ; j != j_e; )
-		*operands++			= new_weight_transition( to.weight_interpolator( ), 0.f, **j++ );
+		*operands++			= new_weight_transition( to.weight_interpolator( ), 1.f, **j++ );
 
 	if ( operands == operands_begin )
 		return;
