@@ -114,7 +114,7 @@ float n_ary_tree_animation_event_iterator::get_nearest_animation_interval_event_
 
 			if ( knot_time*time_direction > target_time*time_direction &&
 				 !math::is_relatively_similar( knot_time*time_direction, target_time*time_direction, math::epsilon_5 ) )
-				continue;
+				break;
 
 			u8 const channel_bit		= u8( 1 ) << channel_id;
 			if ( knot_time == target_time ) {
@@ -171,15 +171,18 @@ void n_ary_tree_animation_event_iterator::advance					( u16 const initial_event_
 		}
 	}
 
-	if ( m_animation->time_calculator() && !start_time_may_be_used ) {
+	if ( m_animation->time_calculator() ) {
+		if ( start_time_may_be_used )
+			return;
+
 		m_value							= animation_event( u32(-1), 0, 0 );
 		m_animation						= 0;
 		return;
 	}
 
 	float animation_state_interval_time =
-		m_animation->time_driving_animation() ?
-		m_animation->time_driving_animation()->animation_state().animation_interval_time :
+		m_animation->get_animation_state() ?
+		m_animation->get_animation_state()->animation_interval_time :
 		m_value.animation_interval_time;
 	u32 iteration						= 0;
 	for ( ;; ++iteration ) {
