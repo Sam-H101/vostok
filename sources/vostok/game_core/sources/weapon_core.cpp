@@ -382,7 +382,7 @@ void weapon_core::tick( )
 			reset_fire_queue( );
 	}
 
-	if ( target_active_object.c_ptr( ) == this && m_user_animations_selector.is_ready_to_be_deactivated( ) )
+	if ( target_active_object.c_ptr( ) != this && m_user_animations_selector.is_ready_to_be_deactivated( ) )
 		set_target( weapon_target_inactive );
 	else if ( !could_be_used( *get_user( ) ) )
 		set_target( weapon_target_idle );
@@ -503,10 +503,6 @@ void weapon_core::instant_aim_end( )
 	m_aiming_state_transition = true;
 }
 
-// claude@NOTE: 6/6 STRUCTURE MATCH, 5/5 locals (90.7%). Residual SIZE -0x2 on the last statement is a
-// non-steerable arg-evaluation/register-scheduling artifact: the target evaluates create_rotation's
-// first arg (m_fire_bullet_transform.k.xyz()) before deg2rad(dispersion_amount); MSVC here reverses
-// them, costing 2 bytes of mov ordering. Not a source-shape fix.
 float3 weapon_core::get_dispersed_bullet_dir( )
 {
 	float const dispersion_angle	= math::clamp_r( m_normal_random.rand_n( 1.f ), -1.f, 1.f );
@@ -517,7 +513,7 @@ float3 weapon_core::get_dispersed_bullet_dir( )
 
 	float3 const& rot_axis			= math::create_rotation( m_fire_bullet_transform.k.xyz( ), random_k ).transform_direction( m_fire_bullet_transform.i.xyz( ) );
 
-	float3 bullet_direction			= math::create_rotation( m_fire_bullet_transform.k.xyz( ), math::deg2rad( dispersion_amount ) ).transform_direction( rot_axis );
+	float3 bullet_direction			= math::create_rotation( rot_axis, math::deg2rad( dispersion_amount ) ).transform_direction( m_fire_bullet_transform.k.xyz( ) );
 
 	return bullet_direction;
 }
@@ -566,17 +562,15 @@ animation::callback_return_type_enum weapon_core::on_sprint_animation_ended( ani
 {
 	params.interrupt_animation_player_tick = true;
 
-	get_user( )->unsubscribe_animation_player( animation::channel_id_max, this );
-	get_user( )->unsubscribe_animation_player( animation::channel_id_max, (pcvoid)( (pcbyte)this + 1 ) );
+	get_user( )->unsubscribe_animation_player( animation::channel_id_on_animation_lexeme_end, this );
+	get_user( )->unsubscribe_animation_player( animation::channel_id_on_animation_lexeme_end, (pcvoid)( (pcbyte)this + 1 ) );
 
 	m_is_in_sprint_transition = false;
 	return animation::callback_return_type_dont_call_me_anymore;
 }
 
-// claude@NOTE: 27/27 STRUCTURE MATCH. The sprint guard is split into a nested `if` (not a folded
-// `&&`) because the target gives `is_sprinting()` its own line-table statement - reproduced here.
-// % (~70%) is walled by the two subscribe_animation_player sites: the target out-lines a chunk of the
-// boost::bind/function machinery this build inlines (inline-vs-call ceiling), a non-steerable residual.
+// claude@NOTE: the sprint guard is split into a nested `if` (not a folded `&&`) because the target
+// gives `is_sprinting()` its own line-table statement.
 void weapon_core::set_target( weapon_targets target )
 {
 	if ( target == weapon_target_fire || target == weapon_target_aim_fire )
@@ -597,8 +591,8 @@ void weapon_core::set_target( weapon_targets target )
 	{
 		m_is_in_sprint_transition = true;
 
-		get_user( )->subscribe_animation_player( animation::channel_id_max, boost::bind( &weapon_core::on_sprint_animation_ended, this, _1 ), get_user( ), resources::managed_resource_ptr( NULL ), this );
-		get_user( )->subscribe_animation_player( animation::channel_id_max, boost::bind( &weapon_core::on_sprint_animation_ended, this, _1 ), get_user( ), resources::managed_resource_ptr( NULL ), (pcvoid)( (pcbyte)this + 1 ) );
+		get_user( )->subscribe_animation_player( animation::channel_id_on_animation_lexeme_end, boost::bind( &weapon_core::on_sprint_animation_ended, this, _1 ), this, m_user_animations_selector.animations( ).get_sprint_animation( 0, false ), get_user( ) );
+		get_user( )->subscribe_animation_player( animation::channel_id_on_animation_lexeme_end, boost::bind( &weapon_core::on_sprint_animation_ended, this, _1 ), (pcvoid)( (pcbyte)this + 1 ), m_user_animations_selector.animations( ).get_sprint_animation( 0, true ), get_user( ) );
 	}
 
 	if ( m_is_in_sprint_transition || m_user_animations_selector.is_in_jump( ) )
@@ -613,8 +607,8 @@ void weapon_core::set_target( weapon_targets target )
 	{
 		if ( !ready_to_reload( ) )
 		{
-			if ( !m_ammunition || ( *m_ammunition ).amount( ) == 0 )
-				on_reload_started( );
+			if ( !ammunition( ) || ammunition( )->amount( ) == 0 )
+				on_ammo_empty( );
 
 			if ( m_target == weapon_target_aim_fire || m_target == weapon_target_aim )
 				target = weapon_target_aim;
@@ -694,10 +688,12 @@ void weapon_core::load_ammo( )
 			{
 				m_is_round_chambered = true;
 				( *m_ammunition ).set_amount( ( *m_ammunition ).amount( ) - 1 );
-			} } else if ( m_ammo_in_magazine != 0 )
-		{
-			m_is_round_chambered = true;
-			--m_ammo_in_magazine;
+			}
+			else if ( m_ammo_in_magazine != 0 )
+			{
+				m_is_round_chambered = true;
+				--m_ammo_in_magazine;
+			}
 		}
 	}
 }
@@ -856,8 +852,8 @@ void weapon_core::deactivate( )
 
 	if ( m_is_in_sprint_transition )
 	{
-		get_user( )->unsubscribe_animation_player( animation::channel_id_max, this );
-		get_user( )->unsubscribe_animation_player( animation::channel_id_max, (pcvoid)( (pcbyte)this + 1 ) );
+		get_user( )->unsubscribe_animation_player( animation::channel_id_on_animation_lexeme_end, this );
+		get_user( )->unsubscribe_animation_player( animation::channel_id_on_animation_lexeme_end, (pcvoid)( (pcbyte)this + 1 ) );
 	}
 
 	m_user_animations_selector.deactivate( );
@@ -898,7 +894,7 @@ void weapon_core::update_bones_matrices(
 
 	update_dispersion( ( m_user->input( ).actions_mask & 0x1 ) != ( m_user->input( ).actions_mask & 0x2 ) || ( m_user->input( ).actions_mask & 0x8 ) != ( m_user->input( ).actions_mask & 0x4 ), current_time_in_ms );
 
-	float4x4 const&	weapon_transform		= m_user->get_transform( );
+	float4x4 const&	user_transform			= m_user->get_transform( );
 
 	u32 const		weapon_matrices_count	= ( *m_skeleton ).get_non_root_bones_count( );
 	float4x4* const	weapon_matrices			= (float4x4*)alloca( weapon_matrices_count * sizeof( float4x4 ) );
@@ -908,7 +904,7 @@ void weapon_core::update_bones_matrices(
 	u32 const		weapon_bone_index		= ( *user_skeleton ).get_bone_index( "Weapon" ) - ( *user_skeleton ).get_root_bones_count( );
 
 	user_animation_player.compute_bones_local_matrices( *user_skeleton, user_matrices, user_matrices + weapon_matrices_count, m_user, NULL );
-	change_matrix_orientation( math::create_rotation( float3( math::pi, 0.0f, 0.0f ) ), user_matrices[weapon_bone_index] );
+	change_matrix_orientation( math::create_rotation( user_matrices[weapon_bone_index].j.xyz( ), math::pi ), user_matrices[weapon_bone_index] );
 
 	if ( s_ik_enable_on_hands_value )
 		m_hand_ik_processor.process( current_time_in_ms, weapon_matrices, user_matrices );
@@ -916,7 +912,7 @@ void weapon_core::update_bones_matrices(
 	if ( s_ik_enable_on_legs_value && m_user->physics_controller( ).on_ground( ) )
 	{
 		m_legs_ik_processor.tick( current_time_in_ms );
-		m_legs_ik_processor.process( user_matrices, weapon_transform );
+		m_legs_ik_processor.process( user_matrices, user_transform );
 	}
 
 	process_finger_correction( current_time_in_ms, user_matrices );
@@ -933,17 +929,17 @@ void weapon_core::update_bones_matrices(
 		}
 	}
 
-	float4x4 const&	user_transform			= weapon_transform * user_matrices[weapon_bone_index];
-	set_transform( user_transform );
+	float4x4 const&	weapon_transform		= user_matrices[weapon_bone_index] * user_transform;
+	set_transform( weapon_transform );
 
-	on_skeleton_matrices_changed( current_time_in_ms, weapon_transform, weapon_matrices, weapon_matrices + weapon_matrices_count, user_transform, user_matrices, user_matrices + user_matrices_count, weapon_transform );
+	on_skeleton_matrices_changed( current_time_in_ms, weapon_transform, weapon_matrices, weapon_matrices + weapon_matrices_count, user_transform, user_matrices, user_matrices + user_matrices_count, user_matrices[weapon_bone_index] );
 
 	u32 const		head_bone_index			= ( *user_skeleton ).get_bone_index( "Head" ) - ( *user_skeleton ).get_root_bones_count( );
-	character_head_transform = animation::calculated_head_matrix( user_matrices[head_bone_index], weapon_transform );
+	character_head_transform = animation::calculated_head_matrix( user_matrices[head_bone_index], user_transform );
 	set_fire_bullet_transform( character_head_transform );
 
 	u32 const		root_bone_index			= ( *user_skeleton ).get_bone_index( "Root" ) - ( *user_skeleton ).get_root_bones_count( );
-	character_transform = weapon_transform * user_matrices[root_bone_index];
+	character_transform = user_matrices[root_bone_index] * user_transform;
 }
 
 bool weapon_core::is_sprinting( ) const

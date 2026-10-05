@@ -9,7 +9,7 @@ namespace survarium {
 
 class weapon_core_inactive_state : public weapon_core_base_state {
 public:
-	inline	explicit							weapon_core_inactive_state	( weapon_core& weapon ) : weapon_core_base_state( weapon, false ) { }
+	inline	explicit							weapon_core_inactive_state	( weapon_core& weapon ) : weapon_core_base_state( weapon, false ) { m_is_ready_to_be_deactivated = true; }
 
 private:
 	virtual	bool								is_ready_for_transition		( ) const override { return true; }
