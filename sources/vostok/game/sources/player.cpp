@@ -265,7 +265,7 @@ void player::remove( )
 		hide( );
 
 	m_current_active_object->deactivate( );
-	on_before_active_object_changed( interactive_object_ptr( ), m_current_active_object );
+	on_before_active_object_changed( m_current_active_object, interactive_object_ptr( ) );
 	m_current_active_object = interactive_object_ptr( );
 	m_target_active_object = interactive_object_ptr( );
 
