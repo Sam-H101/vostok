@@ -1,4 +1,4 @@
-# Lone 4-byte `mov byte[ebp-N],0` with no lea/call - origin UNRESOLVED (not an unused bool)
+# Lone 4-byte `mov byte[ebp-N],0` with no lea/call - often a member store on a stack object (not an unused bool)
 tags: cpp:bool cpp:local cpp:const | asm:mov | topic:codegen-idiom topic:assert-eater
 symptoms: <0x4> statement, mov byte ptr [ebp-N],0 with no lea/call, no PDB local for the slot
 confidence: 2/10
@@ -16,5 +16,8 @@ lea/call); (3) a short-circuit `&&` byte temp whose reader landed in another rec
 ```asm
 mov byte ptr [ebp-5], 0    ; nothing follows in this record; no local in --view info
 ```
-Known unresolved site: game_core get_weapon_lexeme_pair_impl L40 (review_todos row; the
-fabricated `bool dummy` it once justified was removed in #307).
+FIRST check whether `[ebp-N]` falls INSIDE a stack object (a local's base plus its size, from
+`--view info`): then it is an inlined setter / member store on that object, not a temp.
+Resolved site: game_core get_weapon_lexeme_pair_impl L40 - `[ebp-5]` is `[ebp-58h]+0x53`,
+`main_lexeme_parameters.can_generate_events( false )`. Misreading it as a temp dropped real
+behaviour (every weapon "shoot" event dispatched twice), so never leave such a store unexplained.
