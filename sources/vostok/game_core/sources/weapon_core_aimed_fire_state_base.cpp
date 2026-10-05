@@ -77,7 +77,7 @@ animation::callback_return_type_enum weapon_core_aimed_fire_state_base::on_shot_
 
 	if ( !m_weapon.get_bullets_in_queue( ) )
 	{
-		LOG_WARNING( "!m_weapon.get_bullets_in_queue()" );
+		LOG_ERROR( "!m_weapon.get_bullets_in_queue()" );
 		return animation::callback_return_type_call_me_again;
 	}
 
