@@ -420,9 +420,10 @@ void lobby_menu::update_ui( const u32 frame_delta_in_ms, const u32 current_time_
 
 void lobby_menu::update_status( )
 {
-	flash_value b_val;
-
 	fixed_string< 128 > status_str;
+
+	flash_value b_val;
+	b_val.SetBoolean( false );
 	if ( lobby_client( ).status( status_str ) == lobby::surf_lobby_menu )
 		b_val.SetBoolean( true );
 
