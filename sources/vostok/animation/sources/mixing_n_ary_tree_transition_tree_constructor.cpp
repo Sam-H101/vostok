@@ -733,7 +733,7 @@ n_ary_tree_base_node* n_ary_tree_transition_tree_constructor::new_time_scale_tra
 	if ( n_ary_tree_node_comparer( ).compare( from, to ) == vostok::animation::equal )
 		return				m_cloner.clone(
 								from,
-								0.f,
+								1.f,
 								to_animation.override_existing_animation( ) ? to_animation.animation_state( ).animation_interval_time : from_animation.animation_state( ).animation_interval_time
 							);
 
@@ -741,7 +741,7 @@ n_ary_tree_base_node* n_ary_tree_transition_tree_constructor::new_time_scale_tra
 	if ( time_scale_to_node.interpolator( ).transition_time( ) == 0.f )
 		return				m_cloner.clone(
 								to,
-								0.f,
+								1.f,
 								to_animation.override_existing_animation( ) ? to_animation.animation_state( ).animation_interval_time : from_animation.animation_state( ).animation_interval_time
 							);
 
@@ -777,7 +777,7 @@ n_ary_tree_base_node* n_ary_tree_transition_tree_constructor::new_time_scale_tra
 		m_buffer				+= sizeof( n_ary_tree_time_scale_node );
 		new ( result ) n_ary_tree_time_scale_node(
 			*cloned_interpolator,
-			0.f,
+			to,
 			from_animation.animation_state( ).animation_interval_time,
 			m_current_time_in_ms
 		);
@@ -795,7 +795,7 @@ n_ary_tree_base_node* n_ary_tree_transition_tree_constructor::new_time_scale_tra
 	m_buffer				+= sizeof( n_ary_tree_time_scale_node );
 	new ( time_scale_to ) n_ary_tree_time_scale_node(
 			*cloned_interpolator,
-			0.f,
+			to,
 			from_animation.animation_state( ).animation_interval_time,
 			m_current_time_in_ms
 		);
@@ -831,8 +831,8 @@ n_ary_tree_base_node* n_ary_tree_transition_tree_constructor::new_time_scale_tra
 	m_buffer				+= sizeof( n_ary_tree_time_scale_node );
 	new ( time_scale_from ) n_ary_tree_time_scale_node(
 			*cloned_interpolator,
-			0.f,
 			from,
+			animation_time,
 			m_current_time_in_ms
 		);
 
