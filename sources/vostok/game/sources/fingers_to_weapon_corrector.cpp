@@ -49,7 +49,8 @@ static u32 s_index_of_parent[16] =
 // ctor shows the opposite: target calls, base inlines). Not source-steerable without
 // __forceinline on the shared interpolator header (off-limits - other units' call sites).
  fingers_to_weapon_corrector::fingers_to_weapon_corrector( ) :
-	m_interpolator( 0.1f )
+	m_interpolator( 0.1f ),
+	m_first_person_view( false )
 {
 }
 
