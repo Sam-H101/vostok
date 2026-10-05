@@ -3,7 +3,7 @@
 #include <vostok/render/core/backend.h>
 #include <vostok/render/core/effect_manager.h>
 #include <vostok/render/core/options.h>
-
+#include "scene_view.h"
 #include "effect_debug_environment_probe_preview.h"
 #include "environment_probe.h"
 #include "material.h"
