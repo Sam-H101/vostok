@@ -1478,7 +1478,7 @@ void stage_lights::execute( )
 	float max_rad = 0.0f;
 
 	vector< render_surface_instance* > m_dynamic_visuals;
-	m_context->scene()->select_models( m_context->get_culling_vp(), m_dynamic_visuals, m_context->get_v_inverted().c.xyz(), visible_flag, false );
+	m_context->scene()->select_models( m_context->get_culling_vp(), m_dynamic_visuals, m_context->get_view_pos(), visible_flag, false );
 
 	vector< render_surface_instance* >::iterator it_d		= m_dynamic_visuals.begin();
 	vector< render_surface_instance* >::const_iterator end_d	= m_dynamic_visuals.end();
@@ -1588,81 +1588,81 @@ void stage_lights::execute( )
 		}
 	}
 
-	if (options::ref().current.m_lighting_quality)
+	if (!options::ref().current.m_lighting_quality)
+		return;
+
+	particle::world* part_world = m_context->scene()->particle_world();
+
+	if (!part_world)
 	{
-		particle::world* part_world = m_context->scene()->particle_world();
+		m_context->set_w					( float4x4().identity() );
+		return;
+	}
 
-		if (!part_world)
+	D3D11_VIEWPORT orig_viewport;
+	backend::ref().get_viewport(orig_viewport);
+
+	D3D11_VIEWPORT tmp_viewport;
+	tmp_viewport.TopLeftX = 0.0f;
+	tmp_viewport.TopLeftY = 0.0f;
+	tmp_viewport.Width = float(m_context->get_rt(rt_particle_lighting)->width());
+	tmp_viewport.Height = float(m_context->get_rt(rt_particle_lighting)->height());
+	tmp_viewport.MinDepth = 0.0f;
+	tmp_viewport.MaxDepth = 1.0f;
+	backend::ref().set_viewport(tmp_viewport);
+
+	backend::ref().set_render_targets(&*m_context->get_rt(rt_particle_lighting), 0, 0, 0);
+
+	particle::render_particle_emitter_instances_type emitters(g_allocator);
+	part_world->get_render_emitter_instances(m_context->get_culling_vp(), emitters);
+
+	for (particle::render_particle_emitter_instances_type::const_iterator it=emitters.begin(); it!=emitters.end(); ++it)
+	{
+		render::render_particle_emitter_instance* instance = static_cast< render::render_particle_emitter_instance* >(*it);
+		u32 const num_particles = instance->get_num_particles();
+
+		if (!num_particles)
+			continue;
+
+		particle::enum_particle_render_mode particle_render_mode = m_context->get_scene_view()->get_particles_render_mode();
+
+		for ( ; probe_it != m_context->get_scene_view()->get_visible_environment_probes().end(); ++probe_it)
 		{
-			m_context->set_w					( float4x4().identity() );
-			return;
-		}
-
-		D3D11_VIEWPORT orig_viewport;
-		backend::ref().get_viewport(orig_viewport);
-
-		D3D11_VIEWPORT tmp_viewport;
-		tmp_viewport.TopLeftX = 0.0f;
-		tmp_viewport.TopLeftY = 0.0f;
-		tmp_viewport.Width = float(m_context->get_rt(rt_generic_0)->width());
-		tmp_viewport.Height = float(m_context->get_rt(rt_generic_0)->height());
-		tmp_viewport.MinDepth = 0.0f;
-		tmp_viewport.MaxDepth = 1.0f;
-		backend::ref().set_viewport(tmp_viewport);
-
-		backend::ref().set_render_targets(&*m_context->get_rt(rt_generic_0), 0, 0, 0);
-
-		particle::render_particle_emitter_instances_type emitters(g_allocator);
-		part_world->get_render_emitter_instances(m_context->get_culling_vp(), emitters);
-
-		for (particle::render_particle_emitter_instances_type::const_iterator it=emitters.begin(); it!=emitters.end(); ++it)
-		{
-			render::render_particle_emitter_instance* instance = static_cast< render::render_particle_emitter_instance* >(*it);
-			u32 const num_particles = instance->get_num_particles();
-
-			if (!num_particles)
+			environment_probe* probe = *probe_it;
+			if ((options::ref().current.m_use_hiz_occlusion_culling && probe->is_occluded()) || !probe->m_texture || !probe->m_properties.enabled)
 				continue;
 
-			particle::enum_particle_render_mode particle_render_mode = m_context->get_scene_view()->get_particles_render_mode();
+			math::aabb bbox = instance->get_aabb();
+			bbox.modify(instance->transform());
 
-			for ( ; probe_it != m_context->get_scene_view()->get_visible_environment_probes().end(); ++probe_it)
-			{
-				environment_probe* probe = *probe_it;
-				if ((options::ref().current.m_use_hiz_occlusion_culling && probe->is_occluded()) || !probe->m_texture || !probe->m_properties.enabled)
-					continue;
+			if (probe->m_properties.radius <= max_rad)
+				continue;
 
-				math::aabb bbox = instance->get_aabb();
-				bbox.modify(instance->transform());
-
-				if (probe->m_properties.radius <= max_rad)
-					continue;
-
-				max_rad = probe->m_properties.radius;
-				found_probe = probe;
-			}
-
-			if (found_probe)
-				render_particle_probe_lighting(instance, found_probe, num_particles);
-
-			light* L = m_context->scene()->lights().get_sun().c_ptr();
-
-			if (L && L->m_enabled)
-				render_particle_lighting(instance, L, num_particles);
-
-			if (particle_render_mode==particle::normal_particle_render_mode && instance->get_material_effects().stage_enable[lighting_render_stage])
-			{
-				for (lights_db::lights_type::const_iterator e_it=e_lights.begin() ; e_it!=e_lights.end(); ++e_it)
-				{
-					if (&*e_it->light == L)
-						continue;
-
-					render_particle_lighting(instance, &*e_it->light, num_particles);
-				}
-			}
+			max_rad = probe->m_properties.radius;
+			found_probe = probe;
 		}
 
-		backend::ref().set_viewport(orig_viewport);
+		if (found_probe)
+			render_particle_probe_lighting(instance, found_probe, num_particles);
+
+		light* L = m_context->scene()->lights().get_sun().c_ptr();
+
+		if (L && L->m_enabled)
+			render_particle_lighting(instance, L, num_particles);
+
+		if (particle_render_mode==particle::normal_particle_render_mode && instance->get_material_effects().stage_enable[lighting_render_stage])
+		{
+			for (lights_db::lights_type::const_iterator e_it=e_lights.begin() ; e_it!=e_lights.end(); ++e_it)
+			{
+				if (&*e_it->light == L)
+					continue;
+
+				render_particle_lighting(instance, &*e_it->light, num_particles);
+			}
+		}
 	}
+
+	backend::ref().set_viewport(orig_viewport);
 
 	END_CPUGPU_TIMER;
 
