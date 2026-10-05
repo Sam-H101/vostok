@@ -225,6 +225,8 @@ std::pair< animation::mixing::expression, animation::mixing::animation_lexeme > 
 			0,
 			0
 		)
+		.weight_synchronization_group_id	( 0 )
+		.playback_type			( animation::mixing::play_once_and_freeze_at_end )
 		.time_calculator		( &freeze_at_end_time_calculator )
 		.time_scale			( 0.5f )
 		.animated_object		( m_user )
