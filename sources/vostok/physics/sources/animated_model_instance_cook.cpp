@@ -13,7 +13,7 @@ animated_model_instance_cook::animated_model_instance_cook( ):
 	resources::translate_query_cook	(
 		resources::physics_animated_model_instance_class,
 		reuse_false,
-		thread_id_unset
+		use_current_thread_id
 	),
 	m_allocator						( g_ph_allocator )
 {
