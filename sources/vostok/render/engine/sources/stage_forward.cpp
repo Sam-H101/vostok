@@ -222,8 +222,8 @@ void stage_forward::render_forward_models(
 				m_context->get_scene_view( )->post_process_parameters( ).environment_far_fog_distance
 			)
 		);
-		backend::ref( ).set_ps_constant( m_near_fog_distance, m_context->get_scene_view( )->post_process_parameters( ).environment_near_fog_distance );
 		backend::ref( ).set_ps_constant( m_fog_alpha, m_context->get_scene_view( )->post_process_parameters( ).environment_fog_alpha );
+		backend::ref( ).set_ps_constant( m_near_fog_distance, m_context->get_scene_view( )->post_process_parameters( ).environment_near_fog_distance );
 
 		float const use_rain = m_context->get_scene_view( )->post_process_parameters( ).environment_use_rain ? 1.0f : 0.0f;
 		backend::ref( ).set_ps_constant( m_use_rain_parameter, use_rain );
