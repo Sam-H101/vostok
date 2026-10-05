@@ -657,7 +657,7 @@ public:
 	ps_cache m_p_shaders;
 
 	void reload_texture( pcstr name ) { m_textures_to_reload.push_back( name ); }
-	void unregister_all_samplers( ) { m_samplers_registry.clear( ); }
+	void unregister_all_samplers( ) { m_sampler_cache.clear_state_array( ); m_samplers_registry.clear( ); }
 	void bind_samplers_to_shaders( );
 
 private:
