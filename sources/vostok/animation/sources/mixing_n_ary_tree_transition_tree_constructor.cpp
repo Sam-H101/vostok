@@ -1136,17 +1136,17 @@ void n_ary_tree_transition_tree_constructor::change_animation(
 	const bool						is_new_driving_animation
 )
 {
-	if ( ( to.is_transitting_to_zero( ) && !from.is_transitting_to_zero( ) )
-		|| ( is_new_driving_animation && to.animation_state( ).are_there_any_weight_transitions ) )
+	if ( ( from.is_transitting_to_zero( ) && !to.is_transitting_to_zero( ) )
+		|| ( is_new_driving_animation && from.animation_state( ).are_there_any_weight_transitions ) )
 	{
-		n_ary_tree_base_node** const	from_end	= to.operands( sizeof( n_ary_tree_animation_node ) ) + to.operands_count( );
-		n_ary_tree_base_node**			multiplicands	= to.operands( sizeof( n_ary_tree_animation_node ) );
-		n_ary_tree_base_node**			to_begin	= from.operands( sizeof( n_ary_tree_animation_node ) );
-		n_ary_tree_base_node** const	to_end		= to_begin + from.operands_count( );
+		n_ary_tree_base_node**			multiplicands	= from.operands( sizeof( n_ary_tree_animation_node ) );
+		n_ary_tree_base_node** const	from_end	= multiplicands + from.operands_count( );
+		n_ary_tree_base_node**			to_begin	= to.operands( sizeof( n_ary_tree_animation_node ) );
+		n_ary_tree_base_node** const	to_end		= to_begin + to.operands_count( );
 
 		u32								operands_offset	=
-			( to.operands_count( ) && (*multiplicands)->is_time_scale( ) )
-			|| ( from.operands_count( ) && (*to_begin)->is_time_scale( ) )
+			( from.operands_count( ) && (*multiplicands)->is_time_scale( ) )
+			|| ( to.operands_count( ) && (*to_begin)->is_time_scale( ) )
 			? 1 : 0;
 
 		u32								animation_interval_id;
@@ -1154,32 +1154,32 @@ void n_ary_tree_transition_tree_constructor::change_animation(
 		u32								time_scale_operands_count;
 
 		n_ary_tree_animation_node* const	result	= new_animation(
-			to,
 			from,
+			to,
 			weight_driving_animation,
 			1,
 			time_scale_operands_count,
 			operands_offset,
 			animation_interval_id,
 			animation_interval_time,
-			from.is_transitting_to_zero( ),
+			to.is_transitting_to_zero( ),
 			true
 		);
 
 		n_ary_tree_base_node** new_operands	=
 			static_cast< n_ary_tree_base_node** >( m_buffer.c_ptr( ) ) + time_scale_operands_count;
-		m_buffer				+= ( time_scale_operands_count + 1 ) * sizeof( n_ary_tree_base_node* );
+		m_buffer				+= ( operands_offset + 1 ) * sizeof( n_ary_tree_base_node* );
 
 		if ( !time_scale_operands_count ) {
-			if ( to.operands_count( ) && (*multiplicands)->is_time_scale( ) ) {
-				if ( from.operands_count( ) && (*to_begin)->is_time_scale( ) )
-					*new_operands++	= new_time_scale_transition( to, from, **multiplicands++, **to_begin++ );
+			if ( from.operands_count( ) && (*multiplicands)->is_time_scale( ) ) {
+				if ( to.operands_count( ) && (*to_begin)->is_time_scale( ) )
+					*new_operands++	= new_time_scale_transition( from, to, **multiplicands++, **to_begin++ );
 				else
-					*new_operands++	= new_time_scale_transition( to, **multiplicands++, 1.f );
+					*new_operands++	= new_time_scale_transition( from, **multiplicands++, 1.f );
 			}
 			else {
-				if ( from.operands_count( ) && (*to_begin)->is_time_scale( ) )
-					*new_operands++	= new_time_scale_transition( to.animation_state( ).animation_interval_time, 1.f, **to_begin++ );
+				if ( to.operands_count( ) && (*to_begin)->is_time_scale( ) )
+					*new_operands++	= new_time_scale_transition( from.animation_state( ).animation_interval_time, 1.f, **to_begin++ );
 			}
 		}
 
@@ -1192,7 +1192,7 @@ void n_ary_tree_transition_tree_constructor::change_animation(
 			case 0 :
 				weight_from				= (n_ary_tree_base_node*)m_buffer.c_ptr( );
 				m_buffer				+= sizeof( n_ary_tree_weight_node );
-				new ( weight_from ) n_ary_tree_weight_node( result->weight_interpolator( ), 0.f );
+				new ( weight_from ) n_ary_tree_weight_node( result->weight_interpolator( ), 1.f );
 				break;
 			case 1 :
 				weight_from				= m_cloner.clone( **(from_end - 1) );
@@ -1205,7 +1205,7 @@ void n_ary_tree_transition_tree_constructor::change_animation(
 			n_ary_tree_base_node**	operands	= (n_ary_tree_base_node**)m_buffer.c_ptr( );
 			m_buffer				+= left_multiplicands_count * sizeof( n_ary_tree_base_node* );
 
-			for ( n_ary_tree_base_node** i = multiplicands + ( operands_offset && (*multiplicands)->is_time_scale( ) ? 1 : 0 ); i != from_end; ++i )
+			for ( n_ary_tree_base_node** i = multiplicands + ( time_scale_operands_count && (*multiplicands)->is_time_scale( ) ? 1 : 0 ); i != from_end; ++i )
 				*operands++			= m_cloner.clone( **i );
 
 			break;
@@ -1221,7 +1221,7 @@ void n_ary_tree_transition_tree_constructor::change_animation(
 			case 0 :
 				weight_to				= (n_ary_tree_base_node*)m_buffer.c_ptr( );
 				m_buffer				+= sizeof( n_ary_tree_weight_node );
-				new ( weight_to ) n_ary_tree_weight_node( result->weight_interpolator( ), 0.f );
+				new ( weight_to ) n_ary_tree_weight_node( result->weight_interpolator( ), 1.f );
 				break;
 			case 1 :
 				weight_to				= m_cloner.clone( **(to_end - 1) );
@@ -1234,7 +1234,7 @@ void n_ary_tree_transition_tree_constructor::change_animation(
 			n_ary_tree_base_node**	operands	= (n_ary_tree_base_node**)m_buffer.c_ptr( );
 			m_buffer				+= right_multiplicands_count * sizeof( n_ary_tree_base_node* );
 
-			for ( n_ary_tree_base_node** i = to_begin + ( operands_offset && (*to_begin)->is_time_scale( ) ? 1 : 0 ); i != to_end; ++i )
+			for ( n_ary_tree_base_node** i = to_begin + ( time_scale_operands_count && (*to_begin)->is_time_scale( ) ? 1 : 0 ); i != to_end; ++i )
 				*operands++			= m_cloner.clone( **i );
 
 			break;
@@ -1273,7 +1273,7 @@ void n_ary_tree_transition_tree_constructor::change_animation(
 
 		add_animation_node(
 			*result,
-			&to.animation_state( ),
+			&from.animation_state( ),
 			animation_interval_id,
 			animation_interval_time,
 			false
@@ -1289,15 +1289,15 @@ void n_ary_tree_transition_tree_constructor::change_animation(
 	float					animation_interval_time;
 
 	n_ary_tree_animation_node* const	result	= new_animation(
-		to,
 		from,
+		to,
 		weight_driving_animation,
 		operands_counts.first,
 		time_scale_operands_count,
 		operands_offset,
 		animation_interval_id,
 		animation_interval_time,
-		from.is_transitting_to_zero( ),
+		to.is_transitting_to_zero( ),
 		true
 	);
 
@@ -1315,7 +1315,7 @@ void n_ary_tree_transition_tree_constructor::change_animation(
 
 	add_animation_node(
 		*result,
-		&to.animation_state( ),
+		&from.animation_state( ),
 		animation_interval_id,
 		animation_interval_time,
 		false
