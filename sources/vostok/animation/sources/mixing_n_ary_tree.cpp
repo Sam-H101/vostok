@@ -656,7 +656,7 @@ void n_ary_tree::process_event( n_ary_tree_animation_node& current_animation_nod
 
 		object_movement& accumulated	= state.bone_matrices_computer.accumulated_object_movement;
 		accumulated.translation		= frame_transform.translation - accumulated.translation;
-		accumulated.rotation		= math::quaternion( frame_transform.rotation ) * math::conjugate( accumulated.rotation );
+		accumulated.rotation		= math::conjugate( accumulated.rotation ) * math::quaternion( frame_transform.rotation );
 		accumulated.scale			= frame_transform.scale / accumulated.scale;
 		state.are_there_any_weight_transitions	= true;
 	}
