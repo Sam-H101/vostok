@@ -847,10 +847,10 @@ void stage_light_propagation_volumes::execute_smoothed_impl(
 		tmp_viewport.MinDepth = 0.0f;
 		tmp_viewport.MaxDepth = 1.0f;
 
-		for ( s32 cascade_index = m_num_cascades - 1; cascade_index >= 0; --cascade_index )
+		for ( u32 pass_index = 0; pass_index < 1; ++pass_index )
 		{
 
-			for ( u32 pass_index = 0; pass_index < 2; ++pass_index )
+			for ( s32 cascade_index = m_num_cascades - 1; cascade_index >= 0; --cascade_index )
 			{
 				if ( pass_index == 1 )
 				{
