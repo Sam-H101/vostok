@@ -272,7 +272,7 @@ stage_lights::stage_lights(
 		*m_screen_vertex_ib
 	);
 
-	m_num_instanced_lights = options::ref( ).current.m_num_test_lights;
+	m_num_instanced_lights = options::ref( ).current.m_num_max_light_instances;
 	m_c_light_instances = backend::ref( ).register_constant_host( "light_instances", rc_float );
 	m_light_instances = NEW_ARRAY( float4x4, m_num_instanced_lights );
 
