@@ -101,7 +101,7 @@ void stage_decals_accumulate::execute( )
 
 	backend::ref( ).clear_render_targets(
 		clear_color,
-		math::color( 0.5f, 0.5f, 0.0f, 0.5f ),
+		math::color( 0.5f, 0.5f, 0.5f, 0.0f ),
 		clear_color,
 		clear_color
 	);
