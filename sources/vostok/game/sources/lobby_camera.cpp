@@ -139,7 +139,7 @@ void lobby_camera::tick( )
 
 	process_collision	( m_target_point, ray_direction, m_current_distance_to_focus_point );
 
-	new_inverted_view.c.xyz( )	= m_target_point - ray_direction * m_current_distance_to_focus_point;
+	new_inverted_view.c.xyz( )	= m_target_point - new_inverted_view.k.xyz( ) * m_current_distance_to_focus_point;
 
 	m_inverted_view_matrix		= new_inverted_view;
 }
