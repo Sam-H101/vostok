@@ -733,9 +733,10 @@ void HAL::applyBlendMode(BlendMode mode, bool sourceAc, bool forceAc)
     mode = Profiler.GetBlendMode(mode);
 
     // Multiply requires different fill mode, save it in the HAL's fill flags.
-    FillFlags &= ~(FF_Multiply);
-    if ( mode == Blend_Multiply || mode == Blend_Screen )
+    if ( mode == Blend_Multiply || mode == Blend_Darken )
         FillFlags |= FF_Multiply;
+    else
+        FillFlags &= ~(FF_Multiply);
 
     // Apply or remove blending fill flag.
     if (mode > Blend_Normal)
