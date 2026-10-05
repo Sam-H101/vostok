@@ -382,7 +382,7 @@ void weapon_core::tick( )
 			reset_fire_queue( );
 	}
 
-	if ( target_active_object.c_ptr( ) != this && m_user_animations_selector.is_ready_to_be_deactivated( ) )
+	if ( this != target_active_object.c_ptr( ) && m_user_animations_selector.is_ready_to_be_deactivated( ) )
 		set_target( weapon_target_inactive );
 	else if ( !could_be_used( *get_user( ) ) )
 		set_target( weapon_target_idle );
@@ -747,8 +747,6 @@ void weapon_core::remove_animation_callback( animation::reserved_channel_ids_enu
 	m_user->unsubscribe_animation_player( channel_id, callback_uid );
 }
 
-// Retail inlines the trailing callback registrations while retaining their
-// standalone helpers; preserve the shared helper ownership here.
 void weapon_core::activate( base_player& user, engine& engine )
 {
 	m_dispersion_calculator.set_character_dispersion_params( &user.get_dispersion_params( ) );
@@ -783,7 +781,7 @@ void weapon_core::activate( base_player& user, engine& engine )
 
 	m_legs_ik_processor.set_character_controller( &get_user( )->physics_controller( ) );
 
-	m_user_animations_selector.activate( user, boost::bind( &weapon_core::on_user_sprint, this, false ), boost::bind( &weapon_core::on_user_sprint, this, true ) );
+	m_user_animations_selector.activate( user, boost::bind( &weapon_core::on_user_sprint, this, true ), boost::bind( &weapon_core::on_user_sprint, this, false ) );
 
 	m_logic->set_initial_state( m_logic->states( ).front( ) );
 	m_logic->tick( );
@@ -817,10 +815,10 @@ void weapon_core::activate( base_player& user, engine& engine )
 
 	if ( g_is_server )
 	{
-		set_animation_callback( "sound_events", get_user( ), boost::bind( &weapon_core::on_animation_ik_interval, this, _1 ) );
-		set_animation_callback( "shell_extraction", get_user( ), boost::bind( &weapon_core::on_animation_ik_interval, this, _1 ) );
-		set_animation_callback( "left_hand_corrector", get_user( ), boost::bind( &weapon_core::on_animation_ik_interval, this, _1 ) );
-		set_animation_callback( "right_hand_corrector", get_user( ), boost::bind( &weapon_core::on_animation_ik_interval, this, _1 ) );
+		get_user( )->subscribe_animation_player( "sound_events", boost::bind( &weapon_core::fake_callback, this, _1 ), get_user( ), resources::managed_resource_ptr( NULL ), 0xff, NULL );
+		get_user( )->subscribe_animation_player( "shell_extraction", boost::bind( &weapon_core::fake_callback, this, _1 ), this, resources::managed_resource_ptr( NULL ), 0xff, NULL );
+		get_user( )->subscribe_animation_player( "left_hand_corrector", boost::bind( &weapon_core::fake_callback, this, _1 ), this, resources::managed_resource_ptr( NULL ), 0xff, NULL );
+		get_user( )->subscribe_animation_player( "right_hand_corrector", boost::bind( &weapon_core::fake_callback, this, _1 ), this, resources::managed_resource_ptr( NULL ), 0xff, NULL );
 	}
 }
 
@@ -831,9 +829,9 @@ void weapon_core::deactivate( )
 	if ( g_is_server )
 	{
 		get_user( )->unsubscribe_animation_player( "sound_events", get_user( ) );
-		get_user( )->unsubscribe_animation_player( "shell_extraction", get_user( ) );
-		get_user( )->unsubscribe_animation_player( "left_hand_corrector", get_user( ) );
-		get_user( )->unsubscribe_animation_player( "right_hand_corrector", get_user( ) );
+		get_user( )->unsubscribe_animation_player( "shell_extraction", this );
+		get_user( )->unsubscribe_animation_player( "left_hand_corrector", this );
+		get_user( )->unsubscribe_animation_player( "right_hand_corrector", this );
 	}
 
 	m_dispersion_calculator.set_character_dispersion_params( NULL );
