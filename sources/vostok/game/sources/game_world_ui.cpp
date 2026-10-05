@@ -189,7 +189,7 @@ void game_world_ui::set_base_capture_progress( u32 progress, u32 point_id )
 
 	char buff[64];
 	if ( progress == stats.team_points_amount )
-		vostok::sprintf( buff, "captured!" );
+		vostok::sprintf( buff, "captured!", point_id );
 	else
 		vostok::sprintf( buff, "(%d/%d)", progress, stats.team_points_amount );
 
