@@ -616,8 +616,8 @@ void radiance_volume::inject_occluders(
 		backend::ref().set_gs_constant			(m_c_light_position, light_position);
 		backend::ref().set_gs_constant			(m_c_light_direction, light_direction);
 		backend::ref().set_ps_constant			(m_c_light_position, light_position);
-		backend::ref().set_ps_texture			("t_lpv_rsm_normal", &*m_t_rms_normal);
-		backend::ref().set_ps_texture			("t_lpv_rsm_position", &*m_t_rms_position);
+		backend::ref().set_vs_texture			("t_lpv_rsm_normal", &*m_t_rms_normal);
+		backend::ref().set_vs_texture			("t_lpv_rsm_position", &*m_t_rms_position);
 
 		m_injection_geometry.draw				();
 
@@ -666,9 +666,9 @@ void radiance_volume::inject_lighting(
 
 	m_lpv_effect->apply						(0, 0); // inject_lighting_stage
 
-	backend::ref().set_ps_texture			("t_lpv_rsm_albedo", &*m_t_rms_albedo);
-	backend::ref().set_ps_texture			("t_lpv_rsm_normal", &*m_t_rms_normal);
-	backend::ref().set_ps_texture			("t_lpv_rsm_position", &*m_t_rms_position);
+	backend::ref().set_vs_texture			("t_lpv_rsm_albedo", &*m_t_rms_albedo);
+	backend::ref().set_vs_texture			("t_lpv_rsm_normal", &*m_t_rms_normal);
+	backend::ref().set_vs_texture			("t_lpv_rsm_position", &*m_t_rms_position);
 
 	backend::ref().set_vs_constant			(m_c_grid_origin_and_inv_grid_scale, float4(m_bbox.min, 1.0f / get_scale()));
 	backend::ref().set_gs_constant			(m_c_grid_size, float(m_num_cells));
