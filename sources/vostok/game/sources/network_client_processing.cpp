@@ -349,8 +349,10 @@ void network_client::process_game_status( network_core::packet_reader& packet )
 		{
 			ui.show_pregame( false );
 			if ( m_local_player && m_is_time_synchronized_first_time )
+			{
 				ui.show_parametrized_message( "st_start_match_welcome_message", 0, 0, 0 );
-			attach_to_player( player_ptr( ) );
+				attach_to_player( player_ptr( ) );
+			}
 		}
 		else
 		{
