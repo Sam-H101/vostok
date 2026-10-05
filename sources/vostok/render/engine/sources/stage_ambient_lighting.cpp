@@ -223,7 +223,7 @@ void stage_ambient_lighting::execute( )
 
 			for ( tech_index = 0; tech_index < 2; ++tech_index )
 			{
-				m_ambient_volume_effect->apply_pass( tech_index );
+				m_ambient_volume_effect->apply( tech_index, 0 );
 				m_box_geometry->apply( );
 				backend::ref( ).set_ps_constant( m_c_ambient_volume_multiplier, volume->m_properties.ambient_multiplier );
 				backend::ref( ).render_indexed( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, 36, 0, 0 );
@@ -274,7 +274,7 @@ void stage_ambient_lighting::execute( )
 
 			for ( tech_index = 0; tech_index < 2; ++tech_index )
 			{
-				m_environment_probe_lighting_effect[clip_by_normal][with_shadows][geometry]->apply_pass( tech_index );
+				m_environment_probe_lighting_effect[clip_by_normal][with_shadows][geometry]->apply( tech_index, 0 );
 				backend::ref( ).set_ps_texture( "t_probe_cubemap", &*probe->m_texture );
 				if ( probe->m_properties.with_shadows && probe->m_texture_depth )
 					backend::ref( ).set_ps_texture( "t_probe_cubemap_depth", &*probe->m_texture_depth );
