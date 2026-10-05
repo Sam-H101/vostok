@@ -806,11 +806,11 @@ void system_renderer::draw_speedtree_instance_selections( vector< speedtree_inst
 	}
 }
 
-// No faithful body: the target has no out-of-line record and required terrain members are absent.
-// STATE[STUB]
-void system_renderer::draw_debug_terrain( )
-{
-}
+// system_renderer::draw_debug_terrain is declared only: retail never defines or
+// calls it (renderer::render leaves its draw_debug_terrain flag unreferenced).
+
+
+
 
 void system_renderer::set_model_ghost_mode(
 	polymorph_vector_base< render_model_instance > const& /*render_models*/,

@@ -278,17 +278,17 @@ private:
 		}
 	}
 
+	// the split histogram path is declared only: retail never defines or calls it
 	void buid_luminance_histogram_start(
 		res_texture*,
 		u32,
 		float,
 		float,
 		float*
-	)
-	{
-		// claude@NOTE: developer sources contain only the monolithic histogram path.
-		// STATE[STUB]
-	}
+	);
+
+
+
 
 	void buid_luminance_histogram_step(
 		res_texture*,
@@ -296,11 +296,11 @@ private:
 		float,
 		float,
 		u32 const
-	)
-	{
-		// claude@NOTE: developer sources contain only the monolithic histogram path.
-		// STATE[STUB]
-	}
+	);
+
+
+
+
 
 	void buid_luminance_histogram_end(
 		res_texture*,
@@ -308,11 +308,11 @@ private:
 		float,
 		float,
 		float*
-	)
-	{
-		// claude@NOTE: developer sources contain only the monolithic histogram path.
-		// STATE[STUB]
-	}
+	);
+
+
+
+
 
 	void accumulate_motion_vectors( );
 
