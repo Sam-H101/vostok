@@ -78,9 +78,10 @@ void animations_selector::reset_animation_controller( const u32 time_in_ms )
 
 		m_current_controller = m_target_controller;
 		m_current_controller->initialize( );
-		m_current_controller->set_target( *m_target_controller_parameters );
-		m_target_controller_parameters->reset( );
 	}
+
+	m_current_controller->set_target( *m_target_controller_parameters );
+	m_target_controller_parameters->reset( );
 
 	animation::mixing::expression expression = m_current_controller->selected_animations( buffer );
 	set_animation_player_target( expression, time_in_ms );
