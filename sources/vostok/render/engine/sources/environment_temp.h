@@ -12,19 +12,19 @@ struct environment_temp {
 	environment_temp( );
 	~environment_temp( );
 
-	void tick( float )
-	{
-		// STATE[STUB]
-	}
+	// tick, get_sun_direction: declared only, retail never defines or calls them
+	void tick(
+		float
+	);
 
 	cloud_key_parameters get_interp_key( float time );
 	cloud_key_parameters get_next_key( u32 const index );
 
-	float3 get_sun_direction( float )
-	{
-		// STATE[STUB]
-		return float3( 0.0f, 0.0f, 0.0f );
-	}
+	float3 get_sun_direction(
+		float
+	);
+
+
 
 public:
 	cloud_key_parameters*	keys;
