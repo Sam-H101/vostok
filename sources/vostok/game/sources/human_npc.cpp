@@ -441,8 +441,8 @@ void human_npc::fill_stats( ai::npc_statistics& stats ) const
 	new_item_content.appendf	( "eyes direction: %f  %f  %f", get_eyes_direction().x, get_eyes_direction().y, get_eyes_direction().z );
 	stats.general_state.content.push_back( new_item_content );
 
+	m_model_instance->m_damage_model->fill_stats	( stats, m_game_world.get_game( ).game_time_ms( ) );
 	m_ai_world.fill_npc_stats	( stats, m_brain_unit );
-
 
 }
 
