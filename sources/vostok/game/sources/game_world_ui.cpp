@@ -149,32 +149,32 @@ void game_world_ui::initialize_base_points( network_core::packet_reader& packet 
 
 void game_world_ui::add_victory_points( s8 team_1_points, s8 team_2_points )
 {
-	game_team_id const local_player_team = m_game_world.get_game( ).get_network_client( )->get_current_player( )->team( );
+	game_team_id const local_player_team = static_cast< network_client* >( m_game_world.get_game( ).get_network_client( ) )->get_local_player( )->team( );
 
 	m_victory_points[0] += team_1_points;
 	flash_value args[2];
-	args[0].SetBoolean( local_player_team != team_1 );
+	args[0].SetUInt( local_player_team != team_1 );
 	args[1].SetUInt( m_victory_points[0] );
 	get_ui( )->movie->Invoke( "root.set_artifacts_progress", NULL, args, 2 );
 
 	m_victory_points[1] += team_2_points;
-	args[0].SetBoolean( local_player_team != team_2 );
+	args[0].SetUInt( local_player_team != team_2 );
 	args[1].SetUInt( m_victory_points[1] );
 	get_ui( )->movie->Invoke( "root.set_artifacts_progress", NULL, args, 2 );
 }
 
 void game_world_ui::set_victory_points( s8 team_1_points, s8 team_2_points )
 {
-	game_team_id const local_player_team = m_game_world.get_game( ).get_network_client( )->get_current_player( )->team( );
+	game_team_id const local_player_team = static_cast< network_client* >( m_game_world.get_game( ).get_network_client( ) )->get_local_player( )->team( );
 
 	m_victory_points[0] = team_1_points;
 	flash_value args[2];
-	args[0].SetBoolean( local_player_team != team_1 );
+	args[0].SetUInt( local_player_team != team_1 );
 	args[1].SetUInt( team_1_points );
 	get_ui( )->movie->Invoke( "root.set_artifacts_progress", NULL, args, 2 );
 
 	m_victory_points[1] = team_2_points;
-	args[0].SetBoolean( local_player_team != team_2 );
+	args[0].SetUInt( local_player_team != team_2 );
 	args[1].SetUInt( team_2_points );
 	get_ui( )->movie->Invoke( "root.set_artifacts_progress", NULL, args, 2 );
 }
@@ -418,26 +418,26 @@ void game_world_ui::on_victory_item_put_take( u8 player_id, bool is_taken, bool 
 	else
 		action_id = is_base ? 5 : 4;
 
-	out_event_property.SetUInt( action_id );
+	out_event_property.SetInt( action_id );
 	out_event.SetMember( "action_id", out_event_property );
 
 	out_event_property.SetStringW( player->get_profile_name( ) );
 	out_event.SetMember( "who_name", out_event_property );
 
-	out_event_property.SetUInt( client->is_player_current( player_id ) ? 2 : player->team( ) );
+	out_event_property.SetInt( client->is_player_current( player_id ) ? 2 : player->team( ) );
 	out_event.SetMember( "who_team", out_event_property );
 
 	out_event_property.SetStringW( player->get_profile_name( ) );
 	out_event.SetMember( "victim_name", out_event_property );
 
-	out_event_property.SetUInt( client->is_player_current( player_id ) ? 2 : player->team( ) );
+	out_event_property.SetInt( client->is_player_current( player_id ) ? 2 : player->team( ) );
 	out_event.SetMember( "victim_team", out_event_property );
 
-	out_event_property.SetUInt( 0 );
+	out_event_property.SetInt( 0 );
 	out_event.SetMember( "object_icon", out_event_property );
-	out_event_property.SetUInt( 0 );
+	out_event_property.SetInt( 0 );
 	out_event.SetMember( "extra_icon", out_event_property );
-	out_event_property.SetUInt( 0 );
+	out_event_property.SetInt( 0 );
 	out_event.SetMember( "mastery_icon", out_event_property );
 
 	get_ui( )->movie->Invoke( "root.add_log_message", NULL, &out_event, 1 );
@@ -471,22 +471,22 @@ void game_world_ui::on_player_killed(
 
 	flash_value out_event_property; get_ui( )->movie->CreateObject( &out_event_property );
 
-	out_event_property.SetUInt( victim_id == killer_id ? 2 : 1 );
+	out_event_property.SetInt( victim_id == killer_id ? 2 : 1 );
 	out_event.SetMember( "action_id", out_event_property );
 
 	out_event_property.SetStringW( killer_name );
 	out_event.SetMember( "who_name", out_event_property );
 
-	out_event_property.SetUInt( client->is_player_current( killer_id ) ? 2 : client->get_local_player( )->team( ) != killer->team( ) );
+	out_event_property.SetInt( client->is_player_current( killer_id ) ? 2 : client->get_local_player( )->team( ) != killer->team( ) );
 	out_event.SetMember( "who_team", out_event_property );
 
 	out_event_property.SetStringW( victim_name );
 	out_event.SetMember( "victim_name", out_event_property );
 
-	out_event_property.SetUInt( client->is_player_current( victim_id ) ? 2 : client->get_local_player( )->team( ) != victim->team( ) );
+	out_event_property.SetInt( client->is_player_current( victim_id ) ? 2 : client->get_local_player( )->team( ) != victim->team( ) );
 	out_event.SetMember( "victim_team", out_event_property );
 
-	out_event_property.SetUInt( combat_log_icon );
+	out_event_property.SetInt( combat_log_icon );
 	out_event.SetMember( "object_icon", out_event_property );
 
 	u8 extra_icon = 0;
@@ -495,10 +495,10 @@ void game_world_ui::on_player_killed(
 	else if ( is_headshot )
 		extra_icon = 1;
 
-	out_event_property.SetUInt( extra_icon );
+	out_event_property.SetInt( extra_icon );
 	out_event.SetMember( "extra_icon", out_event_property );
 
-	out_event_property.SetUInt( 0 );
+	out_event_property.SetInt( 0 );
 	out_event.SetMember( "mastery_icon", out_event_property );
 
 	get_ui( )->movie->Invoke( "root.add_log_message", NULL, &out_event, 1 );
