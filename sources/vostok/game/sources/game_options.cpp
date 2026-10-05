@@ -551,8 +551,8 @@ void game_options::assign_binding( game_action_id action_id, pcstr key )
 	m_game.text_translator( ).translate_text( key, w_key_name_txt );
 
 	flash_value bind_value[3];
-	bind_value[0].SetStringW( w_key_name_txt );
-	bind_value[1].SetUInt( action_id );
+	bind_value[0].SetUInt( action_id );
+	bind_value[1].SetStringW( w_key_name_txt );
 	bind_value[2].SetBoolean( is_default );
 	m_options_ui->movie->Invoke( "root.set_keybind", NULL, bind_value, 3 );
 }
@@ -699,19 +699,19 @@ void game_options::reset_bindings( bool is_default )
 		pcstr key_name = m_game.get_key_binder( ).dik_to_keyname( m_game.get_key_binder( ).get_action_dik( key_bind_descriptions[i].action_id, 0 ) );
 
 		flash_value bind_value[3];
-		bind_value[1].SetUInt( key_bind_descriptions[i].action_id );
+		bind_value[0].SetUInt( key_bind_descriptions[i].action_id );
 
 		if ( key_name )
 		{
 			wchar_t w_key_name_txt[512];
 			m_game.text_translator( ).translate_text( key_name, w_key_name_txt );
-			bind_value[0].SetStringW( w_key_name_txt );
+			bind_value[1].SetStringW( w_key_name_txt );
 			key_bind_descriptions[i].old_binded_key.assignf( "%s", key_name );
 		}
 		else
 		{
 			key_bind_descriptions[i].old_binded_key.assignf( "%s", "" );
-			bind_value[0].SetStringW( L"" );
+			bind_value[1].SetStringW( L"" );
 		}
 
 		bind_value[2].SetBoolean( is_default );
