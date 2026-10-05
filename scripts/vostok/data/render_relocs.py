@@ -1582,6 +1582,8 @@ def _function_data_rows(
     base_cones: CallConeIndex | None = None,
     reviews: dict[str, dict[str, str]] | None = None,
     pairs: sema_pairing.Pairing | None = None,
+    *,
+    content_keys: tuple[frozenset[str], frozenset[str]] | None = None,
 ) -> list[dict[str, str]]:
     groups: dict[tuple[str, str], dict] = defaultdict(lambda: {
         "paired": False,
@@ -1632,8 +1634,11 @@ def _function_data_rows(
                 one_past=row.get("base_access") == "address",
             ))
 
-    target_content = _content_keys(target_index)
-    base_content = _content_keys(base_index)
+    if content_keys is None:
+        target_content = _content_keys(target_index)
+        base_content = _content_keys(base_index)
+    else:
+        target_content, base_content = content_keys
 
     # Exact complete windows also prove that an anonymous allocation exists on
     # the other side even when the candidate PDB has no transferable identity.
@@ -2339,6 +2344,8 @@ class AuditContext:
     target_cones: CallConeIndex
     base_cones: CallConeIndex
     reviews: dict[str, dict[str, str]]
+    inputs: dict[str, str]
+    content_keys: tuple[frozenset[str], frozenset[str]]
 
 
 def build_audit_context() -> AuditContext:
@@ -2375,6 +2382,11 @@ def build_audit_context() -> AuditContext:
             base_tokens,
         ),
         reviews=data_reviews.load(),
+        inputs=_inputs(),
+        content_keys=(
+            frozenset(_content_keys(target_index)),
+            frozenset(_content_keys(base_index)),
+        ),
     )
 
 
@@ -2438,6 +2450,7 @@ def refresh(module: str = "render", context: AuditContext | None = None) -> dict
         context.base_cones,
         context.reviews,
         pairs,
+        content_keys=context.content_keys,
     )
     _write_tsv(artifacts.audit, AUDIT_COLUMNS, audit)
     _write_tsv(artifacts.extentless, EXTENTLESS_COLUMNS, extentless)
@@ -2446,7 +2459,7 @@ def refresh(module: str = "render", context: AuditContext | None = None) -> dict
     report = {
         "schema": 5,
         "module": module,
-        "inputs": _inputs(),
+        "inputs": context.inputs,
         "target_relocation_sites": len(target_sites),
         "base_relocation_sites": len(base_sites),
         "audit_rows": len(audit),

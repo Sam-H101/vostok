@@ -40,7 +40,7 @@ _All figures come from the ledger over every target function (paired plus inline
 | `survarium`     |     5 |       19 / 22 (86.4%) |       21 / 22 (95.5%) |  96.0% |     98.1% |
 | `ai_navigation` |     3 |      14 / 14 (100.0%) |      14 / 14 (100.0%) | 100.0% |    100.0% |
 
-_Updated 2026-09-13 &middot; delinker `d7e9292` (folded-symbol reconciliation)._
+_Updated 2026-10-05 &middot; delinker `d7e9292` (folded-symbol reconciliation)._
 <!-- match-score:end -->
 
 <!-- data-match:start -->
@@ -48,13 +48,13 @@ _Updated 2026-09-13 &middot; delinker `d7e9292` (folded-symbol reconciliation)._
 
 _Auto-generated from the consumer-owned objdiff projection plus the independent linked-image audit; it does not feed the function score._
 
-**Function-reachable retail data: 98.14% (70,204,079 / 71,536,291 unique bytes) &middot; paired for comparison: 4.32% (3,088,805 / 71,536,291) &middot; matched projected copies: 66.10% (17,437,367 / 26,379,803).**
+**Function-reachable retail data: 98.14% (70,204,079 / 71,536,291 unique bytes) &middot; paired for comparison: 4.32% (3,091,241 / 71,536,291) &middot; matched projected copies: 66.09% (17,438,567 / 26,387,639).**
 
-_The projection has 15,280 paired copies across 1,701 units and 30,851 unresolved blockers. Strict relocation comparison exposes 1,474 otherwise-exact functions (574,966 code bytes) with referent debt._
+_The projection has 15,046 paired copies across 1,701 units and 31,085 unresolved blockers. Strict relocation comparison exposes 1,460 otherwise-exact functions (574,814 code bytes) with referent debt._
 
-_The linked-image audit is 4.01% exact and covers 98.57% by PDB type extent, with 86.67% paired-only fidelity (11270 / 12787 definitions). Integrity ratchet: armed._
+_The linked-image audit is 4.02% exact and covers 98.57% by PDB type extent, with 86.68% paired-only fidelity (11271 / 12788 definitions). Integrity ratchet: armed._
 
-_Updated 2026-09-13._
+_Updated 2026-10-05._
 <!-- data-match:end -->
 
 ## Requirements
@@ -110,6 +110,16 @@ worktree's `nix develop`, waits for the complete build/refresh process, and
 queues its exit status and log path into that existing thread, including on
 setup or build failure. No timer or model polling is involved. Existing
 per-worktree build locking still serializes the build itself.
+
+Build logs include `[timing]` lines for each phase, expensive delinker/report
+subprocesses, symbol inspection, and each module's data audit. Durations use a
+monotonic clock and include failures; nested/parallel timings are not additive.
+Data preparation runs once per build and its successful result feeds the later
+image-data refresh. Standalone `vostok data refresh` still prepares its inputs.
+Symbol normalization inspects objects in bounded batches; audit fingerprints
+and content keys are shared only within that build, with no persistent cache.
+Deferred performance ideas and their safety requirements are tracked in
+[the performance backlog](docs/todos/perf.md).
 
 Launcher success means only that the service started. Wait for the completion
 notification; do not repeatedly inspect the session, process, service, or log.

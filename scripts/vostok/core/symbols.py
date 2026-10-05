@@ -168,6 +168,50 @@ def object_symbols(nm: str, obj: Path) -> set[str]:
     return names
 
 
+def object_symbol_tables(nm: str, objects: list[Path]) -> dict[Path, set[str]]:
+    """Read bounded batches, retaining exact file and symbol identities."""
+    tables = {obj: set() for obj in objects}
+    cursor = 0
+    while cursor < len(objects):
+        batch = []
+        argument_bytes = 0
+        for obj in objects[cursor:cursor + 256]:
+            name = str(obj.absolute())
+            if "\n" in name or "\r" in name:
+                raise ValueError(f"llvm-nm cannot delimit object path: {name!r}")
+            size = len(name.encode()) + 1
+            if batch and argument_bytes + size > 32768:
+                break
+            batch.append(obj)
+            argument_bytes += size
+        cursor += len(batch)
+        by_name = {str(obj.absolute()): obj for obj in batch}
+        try:
+            result = subprocess.run(
+                [nm, "-A", "--format=bsd", "--no-demangle", *by_name],
+                check=True, capture_output=True, text=True,
+            )
+        except subprocess.CalledProcessError as error:
+            raise RuntimeError(
+                f"llvm-nm failed (exit {error.returncode}): "
+                f"{(error.stderr or str(error)).strip()}"
+            ) from error
+        for line in result.stdout.splitlines():
+            if not line.strip():
+                continue
+            name, separator, record = line.partition(": ")
+            # A POSIX filename may itself contain ': '. Consume only a known
+            # file prefix; symbol spellings (including spaces) stay untouched.
+            while name not in by_name and separator:
+                part, separator, record = record.partition(": ")
+                name += ": " + part
+            match = _NM_RE.fullmatch(record) if separator else None
+            if name not in by_name or match is None:
+                raise RuntimeError(f"unexpected llvm-nm output: {line!r}")
+            tables[by_name[name]].add(match.group("name"))
+    return tables
+
+
 def rich_pdb_aliases(
     target_index: Path,
     base_index: Path,
@@ -238,10 +282,11 @@ def normalize_tree(
     """Normalize target objects atomically; return (objects, renamed symbols)."""
     aliases = aliases or {}
     mappings: dict[str, str] = {}
-    symbols_by_object: dict[Path, set[str]] = {}
-    for obj in sorted(root.rglob("*.obj")):
-        names = object_symbols(nm, obj)
-        symbols_by_object[obj] = names
+    symbols_by_object = _log.timed(
+        "normalization symbol inventory", object_symbol_tables,
+        nm, sorted(root.rglob("*.obj")),
+    )
+    for names in symbols_by_object.values():
         for name in names:
             replacement = aliases.get(name) or compiler_name(name)
             if replacement:

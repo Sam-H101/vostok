@@ -14,6 +14,7 @@ import shutil
 import subprocess
 import tempfile
 from collections import Counter, defaultdict
+from dataclasses import dataclass
 from pathlib import Path
 
 from vostok.core import paths
@@ -1060,7 +1061,14 @@ def init_target(*, force: bool = False) -> None:
         )
 
 
-def prepare_manifests() -> dict:
+@dataclass(frozen=True)
+class PreparedManifests:
+    """Successful preparation for reuse within the same locked build only."""
+
+    summary: dict
+
+
+def prepare_manifests() -> PreparedManifests:
     """Refresh both access graphs and project consumer-owned delink manifests."""
     init_target()
     export_index("base")
@@ -1077,11 +1085,17 @@ def prepare_manifests() -> dict:
             **summary
         )
     )
-    return summary
+    return PreparedManifests(summary)
 
 
-def refresh() -> dict:
-    consumer_summary = prepare_manifests()
+def refresh(*, prepared: PreparedManifests | None = None) -> dict:
+    if prepared is None:
+        prepared = prepare_manifests()
+    return _refresh_prepared(prepared)
+
+
+def _refresh_prepared(prepared: PreparedManifests) -> dict:
+    consumer_summary = prepared.summary
     target_symbols = load(paths.DATA_TARGET_INDEX)
     base_symbols = load(paths.DATA_BASE_INDEX)
     target_image = PEImage(image_paths("target")[0])

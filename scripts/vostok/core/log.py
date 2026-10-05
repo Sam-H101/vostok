@@ -83,6 +83,29 @@ def elapsed(secs: float) -> str:
     return f"{int(secs) // 60}m{int(secs) % 60:02d}s"
 
 
+def timed(label, function, /, *args, **kwargs):
+    """Time a build phase without changing its return value or exception."""
+    start = time.monotonic()
+    outcome = "FAILED"
+    try:
+        result = function(*args, **kwargs)
+        outcome = "OK"
+        return result
+    except KeyboardInterrupt:
+        outcome = "INTERRUPTED"
+        raise
+    except SystemExit as error:
+        outcome = "OK" if error.code in (None, 0) else "FAILED"
+        raise
+    finally:
+        try:
+            logger("timing")(
+                f"{label}: {outcome} in {elapsed(time.monotonic() - start)}"
+            )
+        except (OSError, ValueError):
+            pass  # Logging must not replace a phase's original failure.
+
+
 def record(prog: str, argv: list[str], rc: int, secs: float, err: str = "") -> None:
     """Append one usage line. Never raises."""
     try:

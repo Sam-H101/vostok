@@ -299,7 +299,8 @@ def _generate_report() -> None:
         _prune_reports(archive_dir)
 
     log("Generating objdiff report ...")
-    subprocess.run(
+    _log.timed(
+        "objdiff code subprocess", subprocess.run,
         [objdiff_cli, "report", "generate", "-p", str(OBJDIFF_DIR), "-o", str(report)],
         check=True,
     )
@@ -485,7 +486,7 @@ def _generate_strict_report(project_dir: Path) -> None:
     if not (_nonempty_dir(project_dir / "base") and _nonempty_dir(project_dir / "target")):
         return
     paths.DATA_STRICT_REPORT.parent.mkdir(parents=True, exist_ok=True)
-    subprocess.run([
+    _log.timed("objdiff strict data subprocess", subprocess.run, [
         objdiff_cli, "report", "generate", "-p", str(project_dir),
         "-o", str(paths.DATA_STRICT_REPORT),
         "-c", "functionRelocDiffs=all",
@@ -502,7 +503,7 @@ def _generate_data_report() -> None:
         raise RuntimeError("objdiff-cli is required for the data project")
     if not (_nonempty_dir(project / "base") and _nonempty_dir(project / "target")):
         return
-    subprocess.run([
+    _log.timed("objdiff data subprocess", subprocess.run, [
         objdiff_cli, "report", "generate", "-p", str(project),
         "-o", str(paths.DATA_OBJDIFF_REPORT),
     ], check=True)
@@ -620,7 +621,9 @@ def generate(side: str, *, reports: bool = True, data_project: bool = False) -> 
     out.mkdir(parents=True, exist_ok=True)
 
     log(f"Delinking {side} ({exe.name}) -> {out}")
-    subprocess.run(
+    _log.timed(
+        f"{side} {'data' if data_project else 'code'} delinker subprocess",
+        subprocess.run,
         [
             delinker,
             "--pdb-path",    str(pdb),

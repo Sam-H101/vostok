@@ -8,6 +8,7 @@ import csv
 import json
 
 from vostok.core import paths
+from vostok.core import log as _log
 from vostok.core.tsv import write_if_changed
 from vostok.data import pipeline, render_relocs
 from vostok.ledger import store
@@ -81,11 +82,11 @@ def _open_rows(module: str) -> list[dict[str, str]]:
 
 def refresh() -> dict:
     """Refresh every ledger module and write the aggregate denominator."""
-    context = render_relocs.build_audit_context()
+    context = _log.timed("data audit context", render_relocs.build_audit_context)
     module_rows = {}
     open_rows = []
     for module in modules():
-        report = render_relocs.refresh(module, context)
+        report = _log.timed(f"data audit {module}", render_relocs.refresh, module, context)
         module_rows[module] = _module_row(module, report)
         open_rows.extend(_open_rows(module))
         print(

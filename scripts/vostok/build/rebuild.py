@@ -261,11 +261,11 @@ def main() -> None:
     modules: set[str] = set()
     try:
         log("Refreshing ninja graph from the .vcprojs ...")
-        ninja_regen.regenerate()
+        _log.timed("ninja graph", ninja_regen.regenerate)
 
         log("Building survarium via ninja ...")
         try:
-            modules = run_ninja()
+            modules = _log.timed("ninja build", run_ninja)
         except subprocess.CalledProcessError as e:
             die(f"ninja build failed (exit {e.returncode}); not regenerating diff inputs")
 
@@ -274,10 +274,13 @@ def main() -> None:
             "then COFF; base structure runs in parallel ..."
         )
         failures = []
+        prepared_manifests = None
         with ThreadPoolExecutor(max_workers=1) as ex:
-            structure = ex.submit(generate_structure.generate, "base")
+            structure = ex.submit(
+                _log.timed, "base structure", generate_structure.generate, "base"
+            )
             try:
-                generate_pdb.generate("base")
+                _log.timed("base PDB evidence", generate_pdb.generate, "base")
                 log("base PDB evidence: OK")
             except Exception as e:  # noqa: BLE001 - report every step's failure
                 failures.append("base PDB evidence")
@@ -286,7 +289,9 @@ def main() -> None:
             if "base PDB evidence" not in failures:
                 try:
                     from vostok.data import pipeline as data_pipeline
-                    data_pipeline.prepare_manifests()
+                    prepared_manifests = _log.timed(
+                        "data preparation", data_pipeline.prepare_manifests
+                    )
                     log("consumer-owned data manifests: OK")
                 except Exception as e:  # noqa: BLE001 - report every step's failure
                     failures.append("data manifests")
@@ -296,28 +301,32 @@ def main() -> None:
                 try:
                     # The established code project stays on the measured legacy
                     # delinker and never consumes data manifests.
-                    generate_delink.generate("base")
+                    _log.timed("base code COFF/report", generate_delink.generate, "base")
                     log("base code COFF: OK")
                 except Exception as e:  # noqa: BLE001 - report every step's failure
                     failures.append("base code COFF")
                     log(f"base code COFF: FAILED - {e}")
 
-            if "data manifests" not in failures:
+            if prepared_manifests is not None:
                 try:
                     # Data ownership follows the current consumer graph, so
                     # both synthetic sides are regenerated in their separate
                     # objdiff project. Neither report can feed code/MAX.
-                    generate_delink.generate(
-                        "target", reports=False, data_project=True
+                    _log.timed(
+                        "target data COFF", generate_delink.generate,
+                        "target", reports=False, data_project=True,
                     )
                     log("target data COFF: OK")
                 except Exception as e:  # noqa: BLE001 - report every step's failure
                     failures.append("target data COFF")
                     log(f"target data COFF: FAILED - {e}")
 
-            if not {"data manifests", "target data COFF"} & set(failures):
+            if prepared_manifests is not None and "target data COFF" not in failures:
                 try:
-                    generate_delink.generate("base", data_project=True)
+                    _log.timed(
+                        "base data COFF/reports", generate_delink.generate,
+                        "base", data_project=True,
+                    )
                     log("base data COFF and reports: OK")
                 except Exception as e:  # noqa: BLE001 - report every step's failure
                     failures.append("base data COFF")
@@ -338,7 +347,10 @@ def main() -> None:
         # or gate the function report while the census is being calibrated.
         try:
             from vostok.data import pipeline as data_pipeline
-            data_pipeline.refresh()
+            _log.timed(
+                "image-data ledger", data_pipeline.refresh,
+                prepared=prepared_manifests,
+            )
             log("image-data ledger refreshed (shadow mode).")
         except (Exception, SystemExit) as e:  # noqa: BLE001 - independent shadow lane
             log(f"WARNING: image-data ledger NOT refreshed ({e}); "
@@ -351,7 +363,7 @@ def main() -> None:
         # are already good, and `vostok derive refresh` can re-derive later.
         try:
             from vostok.derive import roster
-            roster.regen()
+            _log.timed("function ledger", roster.regen)
             log("matching ledger re-derived.")
         # catch SystemExit too (regen's missing-artifact guard calls sys.exit) so
         # a derivation hiccup never aborts a build whose diff inputs are good.
@@ -366,7 +378,7 @@ def main() -> None:
         # --gate` while the queue is being drained.
         try:
             from vostok.data import gate as data_gate
-            data_report = data_gate.refresh()
+            data_report = _log.timed("all-module data audits", data_gate.refresh)
             log(
                 "all-module data relocation audit refreshed: "
                 f"{data_report['summary']['modules']:,} modules, "
@@ -382,7 +394,7 @@ def main() -> None:
         # failure warns but never fails the build (the report.json is already good).
         try:
             from vostok.ledger import readme
-            readme.regen_readme()
+            _log.timed("README", readme.regen_readme)
             log("README score block refreshed.")
         except (Exception, SystemExit) as e:  # noqa: BLE001 - never fail the build over the README
             log(f"WARNING: README score block NOT refreshed ({e}); "
