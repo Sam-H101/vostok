@@ -182,9 +182,9 @@ stage_lights::stage_lights(
 
 	if (options::ref().current.m_enabled_local_light_shadows)
 	{
-		m_shadow_depth_stencil[0] = resource_manager::ref().create_render_target(r2_rt_shadow_map_size_1024, 1024, 1024, DXGI_FORMAT_R24G8_TYPELESS, enum_rt_usage_depth_stencil, res_texture_ptr( ), 0, D3D11_USAGE_DEFAULT, 1, 0);
-		m_shadow_depth_stencil[1] = resource_manager::ref().create_render_target(r2_rt_shadow_map_size_512,   512,  512, DXGI_FORMAT_R24G8_TYPELESS, enum_rt_usage_depth_stencil, res_texture_ptr( ), 0, D3D11_USAGE_DEFAULT, 1, 0);
-		m_shadow_depth_stencil[2] = resource_manager::ref().create_render_target(r2_rt_shadow_map_size_256,   256,  256, DXGI_FORMAT_R24G8_TYPELESS, enum_rt_usage_depth_stencil, res_texture_ptr( ), 0, D3D11_USAGE_DEFAULT, 1, 0);
+		m_shadow_depth_stencil[0] = resource_manager::ref().create_render_target(r2_rt_shadow_map_size_1024, 1024, 1024, DXGI_FORMAT_R16_TYPELESS, enum_rt_usage_depth_stencil, res_texture_ptr( ), 0, D3D11_USAGE_DEFAULT, 1, 0);
+		m_shadow_depth_stencil[1] = resource_manager::ref().create_render_target(r2_rt_shadow_map_size_512,   512,  512, DXGI_FORMAT_R16_TYPELESS, enum_rt_usage_depth_stencil, res_texture_ptr( ), 0, D3D11_USAGE_DEFAULT, 1, 0);
+		m_shadow_depth_stencil[2] = resource_manager::ref().create_render_target(r2_rt_shadow_map_size_256,   256,  256, DXGI_FORMAT_R16_TYPELESS, enum_rt_usage_depth_stencil, res_texture_ptr( ), 0, D3D11_USAGE_DEFAULT, 1, 0);
 		m_shadow_depth_stencil_texture[0] = resource_manager::ref().create_texture(r2_rt_shadow_map_size_1024, 0, 0, false, true, true, u32(-1));
 		m_shadow_depth_stencil_texture[1] = resource_manager::ref().create_texture(r2_rt_shadow_map_size_512, 0, 0, false, true, true, u32(-1));
 		m_shadow_depth_stencil_texture[2] = resource_manager::ref().create_texture(r2_rt_shadow_map_size_256, 0, 0, false, true, true, u32(-1));
