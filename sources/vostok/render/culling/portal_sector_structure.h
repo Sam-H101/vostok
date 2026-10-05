@@ -190,11 +190,11 @@ public:
 	void update_portals_visability( math::frustum const& f, pcbyte oclusion_results );
 
 private:
-	// claude@NOTE: the available source builds the plane from the first three points.
-	void adjust_portals_orientation( )
-	{
-		// STATE[STUB]
-	}
+	// declared only: retail never defines or calls it (load does not reorient portals)
+	void adjust_portals_orientation( );
+
+
+
 
 	void initialize_portals_geometry( );
 
