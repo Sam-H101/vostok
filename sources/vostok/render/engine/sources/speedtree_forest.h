@@ -93,12 +93,12 @@ struct speedtree_forest {
 		tree_render_info_array_type& out_tree_render_info_array
 	);
 
-	u32 get_num_visible_instances( ) const
-	{
-		// claude@NOTE: the available developer body is only a stub.
-		// STATE[STUB]
-		return 0;
-	}
+	// declared only: retail never defines or calls it
+	u32 get_num_visible_instances( ) const;
+
+
+
+
 
 	void tick( renderer_context* context );
 
