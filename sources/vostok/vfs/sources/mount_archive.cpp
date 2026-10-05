@@ -107,7 +107,7 @@ void   archive_mounter::mount_archive_impl	(synchronous_device_interface & devic
 	}
 	else
 	{
-		u32 const max_helper_nodes		=	m_args.virtual_path.count_of(virtual_path_string::separator) + 1;
+		u32 const max_helper_nodes		=	m_args.virtual_path.count_of(virtual_path_string::separator) + (m_args.virtual_path.length() > 0 ? 1 : 0) + 1;
 		buffer_vector< mount_helper_node<> * >	helper_nodes(ALLOCA(sizeof(mount_helper_node<> *) * max_helper_nodes), max_helper_nodes);
 		if ( !allocate_mount_branch(& helper_nodes) )
 		{
