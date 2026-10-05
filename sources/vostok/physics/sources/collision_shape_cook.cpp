@@ -15,8 +15,7 @@ collision_shape_cook::collision_shape_cook( bool static_object ):
 	resources::translate_query_cook			(
 		static_object ? resources::collision_bt_shape_class_static : resources::collision_bt_shape_class_dynamic,
 		reuse_true,
-		thread_id_unset,
-		flag_last
+		use_current_thread_id
 	),
 	m_static_object	( static_object )
 {
