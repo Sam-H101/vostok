@@ -83,7 +83,7 @@ std::pair< u32, u32 > get_animation_mixes_count( configs::binary_config_value co
 void animation_space_graph_cook::on_options_received( resources::queries_result& data )
 {
 	resources::query_result_for_cook* const	parent	= data.get_parent_query();
-	if ( data.size() != 1 )
+	if ( !data.is_successful() )
 	{
 		parent->finish_query							( resources::query_result_for_user::error_type_cook_failed );
 		return;
