@@ -429,7 +429,7 @@ n_ary_tree_animation_node* n_ary_tree_transition_tree_constructor::remove_animat
 
 		n_ary_tree_base_node** new_operands	=
 			static_cast< n_ary_tree_base_node** >( m_buffer.c_ptr( ) ) + time_scale_operands_count;
-		m_buffer						+= ( time_scale_operands_count + operands_count ) * sizeof( n_ary_tree_base_node* );
+		m_buffer						+= ( operands_offset + operands_count ) * sizeof( n_ary_tree_base_node* );
 
 		n_ary_tree_base_node** i			= animation.operands( sizeof( n_ary_tree_animation_node ) );
 		n_ary_tree_base_node** const operands_end	= i + animation.operands_count( );
@@ -491,7 +491,7 @@ n_ary_tree_animation_node* n_ary_tree_transition_tree_constructor::remove_animat
 
 	n_ary_tree_base_node** new_operands	=
 		static_cast< n_ary_tree_base_node** >( m_buffer.c_ptr( ) ) + time_scale_operands_count;
-	m_buffer							+= ( time_scale_operands_count + 1 ) * sizeof( n_ary_tree_base_node* );
+	m_buffer							+= ( operands_offset + 1 ) * sizeof( n_ary_tree_base_node* );
 
 	if ( time_scale_operands_count < operands_offset )
 		*new_operands++					= m_cloner.clone(
@@ -530,13 +530,13 @@ n_ary_tree_animation_node* n_ary_tree_transition_tree_constructor::remove_animat
 			m_buffer					+= sizeof( n_ary_tree_multiplication_node );
 			new ( weight_from ) n_ary_tree_multiplication_node( multiplicands_count );
 
-			new_operands					= (n_ary_tree_base_node**)m_buffer.c_ptr( );
+			n_ary_tree_base_node** operands	= (n_ary_tree_base_node**)m_buffer.c_ptr( );
 			m_buffer					+= multiplicands_count * sizeof( n_ary_tree_base_node* );
 
 			n_ary_tree_base_node** multiplicands	= animation.operands( sizeof( n_ary_tree_animation_node ) )
 				+ ( (*animation.operands( sizeof( n_ary_tree_animation_node ) ))->is_time_scale( ) ? 1 : 0 );
 			for ( n_ary_tree_base_node** e = multiplicands + multiplicands_count; multiplicands != e; ++multiplicands )
-				*new_operands++			= m_cloner.clone( **multiplicands );
+				*operands++				= m_cloner.clone( **multiplicands );
 
 			break;
 		}
