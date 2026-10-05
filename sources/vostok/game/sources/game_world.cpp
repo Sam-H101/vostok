@@ -93,9 +93,9 @@ game_world::game_world( game& game ) :
 	m_is_loading( false ),
 	m_victory_items( g_allocator )
 {
-	static console_commands::cc_delegate add_enemy_position_cc( "add_enemy", boost::bind( &game_world::add_enemy_position_for_team, this, _1 ), false );
-	static console_commands::cc_delegate clear_enemies_position_cc( "clear_enemies", boost::bind( &game_world::clear_enemies_positions_for_team, this, _1 ), false );
-	static console_commands::cc_delegate clear_player_spawn_cc( "clear_player_spawn", boost::bind( &game_world::clear_player_spawn_info, this ), false );
+	static console_commands::cc_delegate add_enemy_position_cc( "add_enemy", boost::bind( &game_world::add_enemy_position_for_team, this, _1 ), true, console_commands::command_type_engine_internal );
+	static console_commands::cc_delegate clear_enemies_position_cc( "clear_enemies", boost::bind( &game_world::clear_enemies_positions_for_team, this, _1 ), true, console_commands::command_type_engine_internal );
+	static console_commands::cc_delegate clear_player_spawn_cc( "clear_player_spawn", boost::bind( &game_world::clear_player_spawn_info, this ), false, console_commands::command_type_engine_internal );
 
 	m_step_manager = VOSTOK_NEW_IMPL( *g_allocator, step_manager )( );
 
