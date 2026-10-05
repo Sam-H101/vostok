@@ -277,9 +277,11 @@ void profile_skin_visual_cook::on_configs_loaded(
 		slot_def current_slot_def = body_parts[i];
 		render::skeleton_combined_cook_data::model_def& model_def = cook_data->model_defs[cook_data->models_count];
 		bool has_part = false;
+		u32 dict_id = 0;
 
 		if ( profile->slots[current_slot_def.slot].item.id )
 		{
+			dict_id = profile->slots[current_slot_def.slot].item.dict_id;
 			configs::binary_config_ptr cfg = static_cast_resource_ptr< configs::binary_config_ptr >( data[config_index++].get_unmanaged_resource( ) );
 			current = cfg->get_root( )[
 				current_slot_def.slot == torso_slot ? torso_table_id :
@@ -293,7 +295,8 @@ void profile_skin_visual_cook::on_configs_loaded(
 			has_part = true;
 		}
 
-		path.appendf( "%d_", profile->slots[current_slot_def.slot].item.dict_id );
+		// empty slots contribute "0_" whatever their stale dict_id holds
+		path.appendf( "%d_", dict_id );
 		if ( has_part )
 		{
 			if ( current.value_exists( "base_model_hud" ) && current.value_exists( "part_name_hud" ) )
