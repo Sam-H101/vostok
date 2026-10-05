@@ -431,7 +431,7 @@ void scene::process_streaming(
 	struct ready_texture_comparer {
 		bool operator()( streaming_ready_texture const& left, streaming_ready_texture const& right )
 		{
-			return left.distance > right.distance;
+			return left.distance < right.distance;
 		}
 	};
 
