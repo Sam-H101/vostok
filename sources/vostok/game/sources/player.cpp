@@ -181,7 +181,7 @@ void player::insert_alive( )
 
 	m_target.physics_controller->activate( m_target.transform );
 	if ( m_use_physics_controller_for_current )
-		m_current.physics_controller->activate( m_current.transform );
+		m_current.physics_controller->activate( m_target.transform );
 
 	damage_model( )->reset( );
 	m_stamina.reset( );
