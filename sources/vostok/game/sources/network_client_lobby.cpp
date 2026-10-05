@@ -47,7 +47,7 @@ void network_client::on_lobby_packet_received( network_core::packet_reader& read
 
 			m_last_tick_time_in_ms	= m_game.game_time_ms( );
 
-			LOG_INFO	( "[R] connect_to_game_server: %s: %d game time is %d", host, port, m_last_tick_time_in_ms );
+			LOG_ERROR	( "[R] connect_to_game_server: %s: %d game time is %d", host, port, m_last_tick_time_in_ms );
 
 			m_match_client.set_on_disconnect	( boost::bind( &network_client::on_match_disconnected, this, _1 ) );
 			m_match_client.connect	( host, port, lobby_client( ).session_id( ), m_last_tick_time_in_ms, boost::bind( &network_client::on_connected_to_match, this, _1, _2, _3, _4 ) );
@@ -90,7 +90,7 @@ void network_client::on_lobby_packet_received( network_core::packet_reader& read
 			else if ( type == 0xA )
 				lobby_client( ).read_service_prices	( reader );
 			else
-				LOG_WARNING	( "Unknown client state received [%d]", type );
+				LOG_ERROR	( "Unknown client state received [%d]", type );
 
 			m_game.lobby_menu( ).on_client_status_received	( (lobby::query_info_types)type );
 		}
@@ -117,14 +117,15 @@ void network_client::on_lobby_packet_received( network_core::packet_reader& read
 
 	case vostok::operation_denied:
 		{
-			lobby_client_message_types_enum const op = (lobby_client_message_types_enum)reader.r< u8 >( );
+			lobby_client_message_types_enum op_id = (lobby_client_message_types_enum)reader.r< u8 >( );
+			u8 faction_id = reader.r< u8 >( );
 
 			char description[ 512 ];
 			reader.r_string	( description );
 
-			LOG_WARNING	( "[R] operation_denied: %d", op );
+			LOG_INFO	( "[R] operation_denied: %d", op_id );
 
-			m_game.lobby_menu( ).on_operation_denied_received	( op, description );
+			m_game.lobby_menu( ).on_operation_denied_received	( op_id, description );
 		}
 		break;
 
