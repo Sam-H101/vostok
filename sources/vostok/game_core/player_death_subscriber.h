@@ -8,7 +8,7 @@ namespace survarium {
 struct player_death_subscriber {
 	typedef boost::function< void( ) > player_death_callback_type;
 
-	inline	player_death_subscriber	( player_death_callback_type const& subscription_callback_ ) : subscription_callback( subscription_callback_ ) { }
+	inline	player_death_subscriber	( player_death_callback_type const& subscription_callback_ ) : subscription_callback( subscription_callback_ ), next( 0 ) { }
 	inline	player_death_subscriber	( ) { /* no source */ }
 
 	/* 0x0000 */	player_death_callback_type		subscription_callback;
