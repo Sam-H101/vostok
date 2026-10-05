@@ -450,7 +450,7 @@ void stage_lights::render_to_hw_shadowmap(
 			backend::ref().render_indexed( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, geometry.primitive_count*3, 0, 0);
 		}
 
-		if (options::ref().current.m_enabled_draw_speedtree)
+		if (options::ref().current.m_enabled_draw_speedtree && m_context->scene()->get_speedtree_forest())
 		{
 			speedtree_forest::tree_render_info_array_type visible_trees;
 			m_context->scene()->get_speedtree_forest()->get_visible_tree_components(m_context, view_position, true, visible_trees);
