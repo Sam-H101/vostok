@@ -377,7 +377,7 @@ stage_postprocess::stage_postprocess(
 	u8 data[Kb];
 	effect_options_descriptor desc(data, sizeof(data));
 	desc["vertex_input_type"] = skeletal_4_bones_mesh_vertex_input_type;
-	desc["cull_mode"] = D3D11_CULL_NONE;
+	desc["cull_mode"] = D3D11_CULL_BACK;
 
 	effect_manager::ref().create_effect<effect_motion_vectors_accumulation>(&m_motion_vectors_accumulation_effect, desc);
 	m_blur_offsets_weights	= backend::ref().register_constant_host("offsets_weights", rc_float);
