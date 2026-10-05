@@ -235,7 +235,7 @@ void res_render_output::resize( bool windowed, const u32 size_x, const u32 size_
 
 	if ( m_swap_chain->SetFullscreenState( !m_windowed, output ) != S_OK )
 	{
-		SetFocus( m_window );
+		SetFocus( m_swap_chain_desc.OutputWindow );
 
 		MSG msg;
 		BOOL message_result;
