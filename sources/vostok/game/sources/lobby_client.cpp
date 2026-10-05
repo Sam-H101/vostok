@@ -257,7 +257,7 @@ u8 lobby_client::read_profile_content_info( network_core::packet_reader& reader 
 		if ( m_profiles[ i ].profile_id == profile.profile_id )
 		{
 			m_profiles[ i ]	= profile;
-			m_profiles[ i ].team	= team_undefined;
+			m_profiles[ i ].team	= team_1;
 			return i;
 		}
 	}
