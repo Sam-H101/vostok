@@ -198,7 +198,7 @@ void lobby_menu::on_client_status_received( lobby::query_info_types type )
 			if ( !lobby_client( ).profiles_count( ) )
 				query_account_data( );
 
-			if ( get_game( ).get_game_world( ).is_loading( ) ) {
+			if ( !get_game( ).get_game_world( ).is_loading( ) ) {
 				if ( get_game( ).lobby_menu( ).m_is_in_match_making ) {
 					get_game( ).lobby_menu( ).hide_movie( get_game( ).lobby_menu( ).m_match_making_ui );
 					get_game( ).lobby_menu( ).m_is_in_match_making = false;
@@ -206,11 +206,13 @@ void lobby_menu::on_client_status_received( lobby::query_info_types type )
 			}
 			break;
 		case lobby::in_match_making_order:
+			request_status_from_server( 1000 );
+			break;
 		case lobby::in_match:
 			break;
 
 		case lobby::in_match_making:
-			show_match_making( true );
+			get_game( ).lobby_menu( ).show_match_making( true );
 			request_status_from_server( 1000 );
 			break;
 		default:
