@@ -54,7 +54,7 @@ void chat_handler::initialize( resources::unmanaged_resource_ptr const& ui )
 	m_chat_ui = static_cast_resource_ptr< flash_movie_resource_ptr >( ui );
 
 	get_movie( )->movie->SetBackgroundAlpha( 0.f );
-	get_movie( )->movie->SetViewAlignment( flash_movie::Align_TopRight );
+	get_movie( )->movie->SetViewAlignment( flash_movie::Align_TopLeft );
 	get_movie( )->movie->SetViewScaleMode( flash_movie::SM_NoScale );
 	get_movie( )->movie->SetPriority( 30 );
 
@@ -92,7 +92,7 @@ void chat_handler::callback(
 		focus( true );
 	else if( strcmp( methodName, "chat_enter_cancel" ) == 0 )
 		focus( false );
-	else if( strcmp( methodName, "set_mouse_cursor" ) == 0 && !m_focused )
+	else if( strcmp( methodName, "set_mouse_cursor" ) == 0 && !m_game_ui_mode )
 		m_game.lobby_menu( ).set_cursor( const_cast< flash_value& >( args[ 0 ] ).GetBool( ) );
 }
 
