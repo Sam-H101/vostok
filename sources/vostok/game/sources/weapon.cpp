@@ -550,9 +550,9 @@ void weapon::activate( base_player& user, engine& engine )
 	m_right_toe_bone_index = user.skeleton( ).get_bone_index( "RightFoot" ) - user.skeleton( ).get_root_bones_count( );
 
 	set_animation_callback( "sound_events", get_user( ), boost::bind( &weapon::on_foot_step, this, _1 ) );
-	set_animation_callback( "shell_extraction", get_user( ), boost::bind( &weapon::on_shell_extraction_event, this, _1 ) );
-	set_animation_callback( "left_hand_corrector", get_user( ), boost::bind( &weapon::on_hand_correction_event, this, _1, fingers_to_weapon_corrector::left ) );
-	set_animation_callback( "right_hand_corrector", get_user( ), boost::bind( &weapon::on_hand_correction_event, this, _1, fingers_to_weapon_corrector::right ) );
+	set_animation_callback( "shell_extraction", this, boost::bind( &weapon::on_shell_extraction_event, this, _1 ) );
+	set_animation_callback( "left_hand_corrector", this, boost::bind( &weapon::on_hand_correction_event, this, _1, fingers_to_weapon_corrector::left ) );
+	set_animation_callback( "right_hand_corrector", this, boost::bind( &weapon::on_hand_correction_event, this, _1, fingers_to_weapon_corrector::right ) );
 
 	m_fingers_corrector.activate_hand( fingers_to_weapon_corrector::left, true, m_game_scene->get_game( ).game_time_ms( ) );
 	m_fingers_corrector.activate_hand( fingers_to_weapon_corrector::right, true, m_game_scene->get_game( ).game_time_ms( ) );
@@ -563,9 +563,9 @@ void weapon::activate( base_player& user, engine& engine )
 void weapon::deactivate( )
 {
 	remove_animation_callback( "sound_events", get_user( ) );
-	remove_animation_callback( "shell_extraction", get_user( ) );
-	remove_animation_callback( "left_hand_corrector", get_user( ) );
-	remove_animation_callback( "right_hand_corrector", get_user( ) );
+	remove_animation_callback( "shell_extraction", this );
+	remove_animation_callback( "left_hand_corrector", this );
+	remove_animation_callback( "right_hand_corrector", this );
 
 	weapon_core::deactivate( );
 }
