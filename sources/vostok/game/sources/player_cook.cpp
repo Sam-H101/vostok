@@ -321,7 +321,7 @@ void profile_skin_visual_cook::on_configs_loaded(
 
 	resources::query_resource(
 		path.c_str( ),
-		resources::skeleton_combined_model_class,
+		resources::skeleton_combined_model_instance_class,
 		boost::bind( &profile_skin_visual_cook::on_visual_loaded, this, _1, parent, cook_data ),
 		g_allocator,
 		&ud,
