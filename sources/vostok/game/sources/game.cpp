@@ -412,7 +412,7 @@ void game::on_base_resources_created( resources::queries_result& data )
 	if ( m_is_active )
 	{
 		m_is_active = false;
-		on_application_deactivate( );
+		on_application_activate( );
 	}
 
 	fixed_string< 512 > client_str;
