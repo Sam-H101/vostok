@@ -74,11 +74,11 @@ chat_handler::~chat_handler( )
 
 void chat_handler::call( flash_function_handler_params& params )
 {
-	flash_value w_text;
+	flash_value w_text; w_text.SetConvertStringW( );
 	params.pArgs[ 0 ].GetMember( "text", &w_text );
 
 	if( m_game.get_network_client( )->has_bandwidth( ) )
-		m_game.get_network_client( )->messaging_client( ).on_message_typed( w_text.GetStringW( ), messaging::player_general_channel );
+		m_game.get_network_client( )->messaging_client( ).on_message_typed( w_text.GetStringW( ), ( messaging::message_channel_enum )params.pArgs[ 1 ].GetUInt( ) );
 }
 
 void chat_handler::callback(
