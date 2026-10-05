@@ -107,14 +107,9 @@ void game_world::play_particle(
 	scene_renderer( ).play_particle_system( render_scene( ), static_cast_resource_ptr< particle::particle_system_instance_ptr >( particle ), m );
 }
 
-// claude@NOTE: STRUCTURE MATCH (7 stmts, all paired - no BASE_ONLY/TRGT_ONLY).
-// Residual is inline-vs-call on line 90: the target INLINES create_rotation(
-// direction, normal ) (0x124 of cross-product / normalize matrix math) while our
-// /Od build OUT-LINES it to a single `call` (0x13) - the od-helper-inline-depth
-// wall, not source-steerable. Line 105 (update_decal) carries the decal_properties
-// inline field-fill + call-boundary residual (5 projection bools re-set to 1,
-// alpha/clip = -1) that the target folds into the call site. Both are byte caps
-// over the correct shape, not structure gaps.
+// claude@NOTE: update_decal carries the decal_properties inline field-fill +
+// call-boundary residual (5 projection bools re-set to 1, alpha/clip = -1) that
+// the target folds into the call site.
 void game_world::add_decal(
 	resources::unmanaged_resource_ptr const&	decal,
 	const u32			id,
@@ -128,7 +123,7 @@ void game_world::add_decal(
 {
 	render::decal_properties	properties;
 
-	float4x4 transform			= create_rotation( direction, normal );
+	float4x4 transform			= create_rotation( -normal, ( direction ^ normal ).normalize( ) );
 	transform.c.xyz( )			= position + normal * depth * 0.5f;
 
 	properties.material			= is_front_face ? resources::unmanaged_resource_ptr( ) : decal;
