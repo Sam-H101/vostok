@@ -70,15 +70,12 @@ void lobby_menu::on_activate( )
 	get_game( ).get_chat_handler( ).set_mode( false );
 }
 
-// claude@NOTE: target GFx uses slot +0xC0 with value 2; the available wrapper emits
-// slot +0x34 with value 0. Target LTCG also passes hide_movie arguments in EAX/EDX.
-
 void lobby_menu::on_deactivate( )
 {
 	base_game_scene::on_deactivate( );
 	get_game( ).input_world( ).remove_handler( *this );
 	get_game( ).deactivate_main_menu( );
-	m_lobby_menu_ui->movie->SetViewScaleMode( flash_movie::SM_ExactFit );	// sushi@TODO: target GFx slot [+0xC0](2); wrapper unverified
+	m_lobby_menu_ui->movie->ForceCollectGarbage( );
 
 	if ( m_is_in_match_making )
 		show_match_making( false );
