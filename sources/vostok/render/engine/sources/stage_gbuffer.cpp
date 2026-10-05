@@ -316,7 +316,7 @@ void stage_gbuffer::execute( )
 		0
 	);
 	backend::ref().clear_render_targets(
-		math::color(1.f, .5f, .5f, 1.f), math::color(0.f, 0.f, 0.f, 0.f),
+		math::color(.5f, .5f, 1.f, 1.f), math::color(0.f, 0.f, 0.f, 0.f),
 		math::color(1.f, 1.f, 1.f, 1.f), math::color(0.f, 0.f, 0.f, 0.f)
 	);
 	backend::ref().reset_depth_stencil_target();
