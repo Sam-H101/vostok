@@ -100,7 +100,6 @@ animation::mixing::animation_lexeme player_logic_crouch_state::movement_lexeme(
 		.time_scale							( m_user->get_movement_speed_factor( ) )
 		.animated_object					( m_user )
 		.bones_mask							( bones_mask )
-		.user_data							( 1 )
 	);
 
 	return movement_lexeme;
