@@ -40,7 +40,7 @@ bool game_world::detach_tracer( ::survarium::bullet* bullet )
 		tracer.bullet = NULL;
 	}
 	else
-		LOG_ERROR( "case when bullet_tracer.bullet != bullet not implemented" );
+		LOG_WARNING( "case when bullet_tracer.bullet != bullet not implemented" );
 
 	bullet->m_tracer_idx = 0xFFFF;
 
