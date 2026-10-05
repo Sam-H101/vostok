@@ -351,7 +351,7 @@ void network_client::process_game_status( network_core::packet_reader& packet )
 			if ( m_local_player && m_is_time_synchronized_first_time )
 			{
 				ui.show_parametrized_message( "st_start_match_welcome_message", 0, 0, 0 );
-				attach_to_player( player_ptr( ) );
+				attach_to_player( m_local_player );
 			}
 		}
 		else
@@ -461,7 +461,7 @@ void network_client::process_sync_response( network_core::packet_reader& packet 
 
 	m_is_time_synchronized_first_time = true;
 	if ( !m_current_player && m_game_status == game_status_inprocess && m_local_player && m_local_player->is_alive( ) )
-		attach_to_player( player_ptr( ) );
+		attach_to_player( m_local_player );
 
 	const u32 connected_mask = packet.r< u32 >( );
 	for ( u8 i = 0; i < 20; ++i )
