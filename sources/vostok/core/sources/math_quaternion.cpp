@@ -23,10 +23,10 @@ quaternion::quaternion	( float4x4 const& matrix_raw )
 	R_ASSERT		( matrix_raw.valid() );
 	float4x4 matrix = matrix_raw;
 	matrix.set_scale( float3(1.f, 1.f, 1.f) );
-	float const	trace = matrix.e00 + matrix.e11 + matrix.e22;
+	float const	trace = matrix.e00 + matrix.e11 + matrix.e22 + 1.0f;
 	float		s;
 	if (trace > vostok::math::epsilon_3){
-		s = sqrt(trace + 1.0f);
+		s = sqrt(trace);
 		w 		= s * 0.5f;
 		s 		= 0.5f / s;
 
