@@ -217,9 +217,9 @@ void particle_world::tick( float time_delta, vostok::math::float4x4 const& view_
 	
 	check_lods( inv_view_matrix.lines[3].xyz() );
 	
-	u32 num_need_new	= calc_num_new_particles(time_delta);
-	
 	u32	num_particles	= calc_num_max_particles(time_delta);
+	
+	u32 num_need_new	= calc_num_new_particles(time_delta);
 	
 	float total			= float(num_particles + num_need_new);
 	
