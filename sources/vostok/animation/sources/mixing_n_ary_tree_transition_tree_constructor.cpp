@@ -1422,7 +1422,7 @@ void n_ary_tree_transition_tree_constructor::change_weight_synchronization_group
 	n_ary_tree_animation_node* const	to_end
 )
 {
-	if ( to_begin->weight_synchronization_group_id( ) == u32( -1 ) ) {
+	if ( from_begin->weight_synchronization_group_id( ) == u32( -1 ) ) {
 		merge_weight_asynchronous_groups	( from_begin, from_end, to_begin, to_end );
 		return;
 	}
@@ -1437,7 +1437,7 @@ void n_ary_tree_transition_tree_constructor::change_weight_synchronization_group
 	merge_weight_synchronization_groups(
 		from_begin,
 		from_end,
-		to_begin,
+		to_begin->m_next_weight_animation,
 		to_end,
 		*new_weight_driving_animation_node,
 		!previous_weight_driving_animation
