@@ -1066,7 +1066,7 @@ void lobby_menu::reset_account_money( )
 
 void lobby_menu::on_shop_ui_ready( )
 {
-	for ( u32 trader_id = 1; trader_id <= 3; ++trader_id )
+	for ( u32 trader_id = 1; trader_id <= 4; ++trader_id )
 		lobby_client( ).query_prices( trader_id );
 }
 
