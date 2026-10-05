@@ -81,7 +81,7 @@ void hand_to_weapon_ik_processor::process( u32 const current_time_in_ms, float4x
 			else
 			{
 				float4x4 const&	target_transform	= get_bone_matrix_in_object_space( m_skeleton->get_bone( h->hand_bone_index ), *m_skeleton, user_matrices );
-				float4x4 const&	hand_transform		= mix_transformations( target_transform, locator_transform, get_hand_coefficient( *h, current_time_in_ms ) );
+				float4x4 const&	hand_transform		= mix_transformations( locator_transform, target_transform, get_hand_coefficient( *h, current_time_in_ms ) );
 				process_hand( *h, hand_transform, user_matrices );
 			}
 		}
