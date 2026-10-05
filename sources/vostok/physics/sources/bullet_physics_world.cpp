@@ -678,14 +678,14 @@ bool bullet_physics_world::adjust_foot_transform(
 		{
 			btVector3 result;
 			result.setInterpolate3( btStart, btEnd, callback.m_closestHitFraction );
-
+			transform.c.xyz( ) = float3( 0.f, 0.f, 0.f );
 			if ( s_ik_change_foot_rotation_value )
 			{ // collision normal and the object�s forward direction
 				float3 normal = from_bullet( callback.m_hitNormalWorld );
 				const float angle = math::acos( math::clamp_r( normal.dot_product( -transform.k.xyz( ) ), -1.0f, 1.0f ) ) * rotation_koef0;
 				if ( math::abs( angle ) >= math::epsilon_5 )
 				{
-					float3 rotation_axis = ( -transform.k.xyz( ) ).cross_product( normal ).normalize( );
+					float3 const rotation_axis = math::normalize( normal ^ -transform.k.xyz( ) );
 					transform = math::mul4x3( transform, math::create_rotation( rotation_axis, angle ) );
 				}
 			}
