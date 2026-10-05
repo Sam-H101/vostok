@@ -221,7 +221,7 @@ void game_material_manager_cook::on_decals_loaded( resources::queries_result& da
 		{
 			if ( !data[i].is_successful( ) )
 			{
-				LOG_ERROR( "resource cook failed: %s", data[i].reusable_request_name( ) );
+				LOG_ERROR( "resource cook failed: %s", data[i].reusable_request_name( ).c_str( ) );
 			}
 		}
 	}	// sushi@NOTE: No return!
