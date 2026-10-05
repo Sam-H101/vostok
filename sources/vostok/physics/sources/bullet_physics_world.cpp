@@ -464,6 +464,7 @@ void bullet_physics_world::object_query(
 		{
 			closest_ray_result query_result;
 			query_result.hit_point_world = from_bullet( m_modify_result_transform * convexResult.m_hitPointLocal );
+			query_result.object = static_cast< base_physics_object* >( convexResult.m_hitCollisionObject->getUserPointer( ) );
 
 			btVector3 hitNormalWorld;
 			if ( normalInWorldSpace )
