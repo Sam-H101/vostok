@@ -18,9 +18,9 @@ ui_progress_bar::ui_progress_bar		( ui_world& world ) :
 	m_value				( 0 ),
 	m_border_width		( 1 ),
 	m_border_height		( 1 ),
-	m_back_color		( 143, 14,  23 ),
-	m_front_color		( 236, 104, 17 ),
-	m_text_color		( 43, 210, 206 ),
+	m_back_color		( 23,  14,  143 ),
+	m_front_color		( 17,  104, 236 ),
+	m_text_color		( 206, 210, 43 ),
 	m_draw_text			( false )
 {}
 
