@@ -337,13 +337,13 @@ void stage_light_propagation_volumes::render_to_rms(
 			if ( instance.m_render_surface->get_vertex_input_type( ) != static_mesh_vertex_input_type )
 				continue;
 
-			if ( !me.m_effects[light_propagation_volumes_render_stage] )
+			if ( !me.m_effects[gbuffer_render_stage] )
 				continue;
 
 			if ( !geometry.lpv_pass_geom )
 				continue;
 
-			me.m_effects[light_propagation_volumes_render_stage]->apply( 4, 0 );
+			me.m_effects[gbuffer_render_stage]->apply( 4, 0 );
 			backend::ref( ).set_ps_constant( m_c_light_color, light_color );
 			backend::ref( ).set_ps_constant( m_c_light_intensity, light_intensity );
 			m_context->set_w( *instance.m_transform );
@@ -483,14 +483,14 @@ void stage_light_propagation_volumes::render_to_rms_smoothed2(
 		render_geometry& geometry = instance.m_render_surface->m_render_geometry;
 		if ( instance.m_render_surface->get_vertex_input_type( ) != static_mesh_vertex_input_type )
 			continue;
-		if ( !me.m_effects[light_propagation_volumes_render_stage] )
+		if ( !me.m_effects[gbuffer_render_stage] )
 			continue;
 		if ( !geometry.lpv_pass_geom && !geometry.geom )
 			continue;
 		if ( geometry.lpv_pass_geom )
-			me.m_effects[light_propagation_volumes_render_stage]->apply( 2, 0 );
+			me.m_effects[gbuffer_render_stage]->apply( 2, 0 );
 		else
-			me.m_effects[light_propagation_volumes_render_stage]->apply( 4, 0 );
+			me.m_effects[gbuffer_render_stage]->apply( 4, 0 );
 
 		backend::ref( ).set_ps_constant( m_c_light_color, light_color );
 
