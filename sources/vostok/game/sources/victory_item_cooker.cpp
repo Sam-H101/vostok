@@ -45,7 +45,7 @@ void victory_item_cook::on_subresources_loaded( resources::queries_result& data,
 {
 	resources::query_result_for_cook* const parent = data.get_parent_query( );
 
-	if ( data.size( ) != 1 )
+	if ( !data.is_successful( ) )
 	{
 		LOG_ERROR( "Wrong data in [%s]", data[0].get_requested_path( ) );
 		parent->finish_query( resources::query_result_for_user::error_type_cook_failed );
