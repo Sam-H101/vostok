@@ -677,7 +677,7 @@ void lobby_menu::fill_items_dictionary( )
 		flash_value inventory_item_descr;
 		m_lobby_menu_ui->movie->CreateObject( &inventory_item_descr );
 
-		inventory_item_property.SetUInt( current_item_dict_id );
+		inventory_item_property.SetInt( current_item_dict_id );
 		inventory_item_descr.SetMember( "dictId", inventory_item_property );
 
 		inventory_item_property.SetStringW( item_name );
@@ -689,7 +689,7 @@ void lobby_menu::fill_items_dictionary( )
 		inventory_item_property.SetUInt( current_item_category_id );
 		inventory_item_descr.SetMember( "category", inventory_item_property );
 
-		inventory_item_property.SetUInt( icon );
+		inventory_item_property.SetInt( icon );
 		inventory_item_descr.SetMember( "icon", inventory_item_property );
 
 		float item_weight;
@@ -724,7 +724,7 @@ void lobby_menu::fill_items_dictionary( )
 
 			u32 prop_icon = it->value_exists( "prop_icon" ) ? (*it)["prop_icon"] : 0;
 
-			item_property_member.SetUInt( (*it)["prop_value"] );
+			item_property_member.SetString( (*it)["prop_value"] );
 			item_property.SetMember( "prop_value", item_property_member );
 
 			item_property_member.SetStringW( prop_name );
@@ -1132,7 +1132,7 @@ void lobby_menu::fill_skills_tree( )
 			skills_tree_level_value_prop.SetStringW( branch_name );
 			skills_tree_level_value.SetMember( "name", skills_tree_level_value_prop );
 
-			skills_tree_level_value_prop.SetBoolean( current_level_cfg.value_exists( "perks" ) );
+			skills_tree_level_value_prop.SetUInt( current_level_cfg.value_exists( "perks" ) );
 			skills_tree_level_value.SetMember( "power", skills_tree_level_value_prop );
 
 			m_lobby_menu_ui->movie->CreateArray( &skills_tree_level_value_prop );
