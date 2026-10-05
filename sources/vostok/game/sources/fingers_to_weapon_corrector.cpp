@@ -96,7 +96,7 @@ void fingers_to_weapon_corrector::initialize_locators( render::render_model_inst
 			weapon_model.get_locator		( locator_name.c_str(), current_item );
 
 			matrices[i]						= current_item.m_offset;
-			matrices[i].try_invert			( inverted_matrices[i] );
+			inverted_matrices[i].try_invert	( matrices[i] );
 		}
 
 		for ( u32 i = 0; i < 15; ++i )
