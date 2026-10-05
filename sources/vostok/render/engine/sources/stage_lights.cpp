@@ -1463,7 +1463,7 @@ void stage_lights::execute( )
 	struct sort_by_size_predicate {
 		bool operator()( environment_probe const* left, environment_probe const* right ) const
 		{
-			return left->m_properties.radius > right->m_properties.radius;
+			return left->m_properties.radius < right->m_properties.radius;
 		}
 	};
 
