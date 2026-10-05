@@ -2,18 +2,23 @@
 # Native Windows build: the toolchain's ninja.exe over the synced graph, with the same
 # environment vostok.tool.toolchain configures for Wine. Produces
 # C:\survarium\binaries\Win32\survarium-dx11-win32-gold.exe (+ .pdb). This is a fast
-# iteration build only; scores, the ledger and the README block come from `vostok build` in WSL.
+# iteration build only; scores, the ledger and the README block come from `vostok build`.
+#
+# With vcproj2ninja installed (setup.ps1 -Native) the graph is regenerated first, as
+# `vostok build` does: new #includes and .vcproj edits take effect without WSL. -NoRegen skips it.
 #
 # Watchdog: VS2008's LTCG code generator (c2.dll) sometimes waits forever on a stale handle
 # (WaitForSingleObject on a handle value Windows has already reused for a thread-pool
 # IoCompletion object) - link.exe sits at "Generating code" with 0 CPU. A link that makes no
 # CPU progress for -StallSeconds is killed and ninja is rerun (only the link step re-runs).
 #
-#   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\windows\build.ps1 [-Clean] [-Target <ninja target>]
-param([string]$Target = '', [int]$StallSeconds = 90, [int]$Attempts = 3, [switch]$Clean)
+#   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\windows\build.ps1 [-Clean] [-NoRegen] [-Target <ninja target>]
+param([string]$Target = '', [int]$StallSeconds = 90, [int]$Attempts = 3, [switch]$Clean, [switch]$NoRegen)
 $ErrorActionPreference = 'Stop'
 . "$PSScriptRoot\common.ps1"
 if (-not $Target) { $Target = $ExeTarget }
+Assert-BuildRoot -NoGraph
+if (-not $NoRegen) { Update-NinjaGraph | Out-Null }
 Assert-BuildRoot
 Use-Toolchain
 $ninjaExe = "$Toolchain\ninja\ninja.exe"
