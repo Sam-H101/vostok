@@ -817,8 +817,8 @@ bool n_ary_tree::dispatch_callbacks(
 				event_channels.get_channel_id( subscribed_channel->channel_id );
 			if ( channel_id == u32( -1 ) )
 				continue;
-			if ( ( generator->channel_ids & ( u8( 1 ) << channel_id ) ) !=
-				 ( u8( 1 ) << channel_id ) )
+			if ( u8( generator->channel_ids & u8( u8( 1 ) << channel_id ) ) !=
+				 u8( u8( 1 ) << channel_id ) )
 				continue;
 
 			event_channel const& channel	= event_channels.channel( channel_id );
