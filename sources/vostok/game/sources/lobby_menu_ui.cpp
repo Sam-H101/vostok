@@ -123,12 +123,12 @@ void relocate_item_func::call( flash_function_handler_params& params )
 		{
 			profile_slot_enum const weapon_slot = ( profile_slot_enum )second_item_id;
 			second_item_id = lobby.profile( m_game.lobby_menu( ).selected_profile( ) ).slots[ weapon_slot ].item.dict_id;
-
-			for ( vector< relocate_item_descr >::const_iterator j = descriptions.begin( ); j != descriptions.end( ); ++j )
-			{
-				if ( j->target_slot_id == weapon_slot )
-					second_item_id = j->item_dict_id;
-			}
+			if ( second_item_id )
+				for ( vector< relocate_item_descr >::const_iterator j = descriptions.begin( ); j != descriptions.end( ); ++j )
+				{
+					if ( j->target_slot_id == weapon_slot )
+						second_item_id = j->item_dict_id;
+				}
 		}
 
 		if ( lobby.can_move_item( current_item.item_category, current.target_slot_id ) &&
