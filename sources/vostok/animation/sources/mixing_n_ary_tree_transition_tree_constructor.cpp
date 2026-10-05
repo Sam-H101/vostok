@@ -1097,32 +1097,32 @@ n_ary_tree_animation_node* n_ary_tree_transition_tree_constructor::new_weight_dr
 	u32 animation_interval_id;
 	float animation_interval_time;
 	n_ary_tree_animation_node* const result	= new_animation(
-		new_weight_driving_animation,
 		new_driving_animation_in_previous_target,
+		new_weight_driving_animation,
 		0,
 		operands_counts.first,
 		time_scale_operands_count,
 		operands_offset,
 		animation_interval_id,
 		animation_interval_time,
-		new_driving_animation_in_previous_target.is_transitting_to_zero( ),
+		new_weight_driving_animation.is_transitting_to_zero( ),
 		true
 	);
 
 	n_ary_tree_base_node** operands	=
 		static_cast< n_ary_tree_base_node** >( m_buffer.c_ptr( ) ) + time_scale_operands_count;
-	m_buffer					+= ( time_scale_operands_count + operands_offset ) * sizeof( n_ary_tree_base_node* );
+	m_buffer					+= ( operands_counts.first + operands_offset ) * sizeof( n_ary_tree_base_node* );
 	add_operands(
 		new_driving_animation_in_previous_target,
 		new_weight_driving_animation,
 		operands,
-		operands + operands_offset,
+		operands + operands_counts.first + operands_offset - time_scale_operands_count,
 		time_scale_operands_count != 0
 	);
 
 	return						add_animation_node(
 		*result,
-		&new_weight_driving_animation.animation_state( ),
+		&new_driving_animation_in_previous_target.animation_state( ),
 		animation_interval_id,
 		animation_interval_time,
 		false
