@@ -41,7 +41,7 @@ bypasses). Working hypothesis: Wine's builtin `__unDNameEx` doesn't invoke /
 mishandles the caller callback, so the compiler's "spell it `enum X`" callback
 is skipped and the builtin falls back to bare. The FIX (native msvcr90) is
 validated empirically regardless of the exact internal path. Full write-up +
-Wine bug report: `../../../wine-msvcr90-undname-bug.md` (outside the repo).
+Wine bug report: `../../../../notes/2026-08-25-wine-msvcr90-undname-bug.md` (outside the repo).
 
 Proof chain:
 - Same probe TU, same `cl.exe 15.00.30729.01`, same flags, same machine —

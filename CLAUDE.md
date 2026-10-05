@@ -27,6 +27,38 @@ resolve the delivery problem rather than falling back to polling. Use
 outside Codex, use `--background --notify-thread THREAD` for agent-driven work.
 This applies to every matcher, reviewer, skill and build caller.
 
+### Notification-driven builds: keep the matching pipeline busy
+
+Build latency is time to improve the next function/unit, not idle time. Pipeline
+the work: reconstruct A -> launch build A -> reconstruct B while A builds ->
+on A's completion, verify A and fix its residuals -> queue the next measured
+build and continue the next independent unit. Do not abandon A when moving to B.
+
+After launch, record the job ID and measured source state, give one brief
+acknowledgment, and immediately pick useful work from the structure queue.
+Inspect the next target's statements, assembly, locals and callees; reconstruct
+and prepare its patch. Keep edits in a separate preparation worktree or patch
+outside the active build inputs. Never change source, headers, branch, ledger
+or report inputs being measured. Keep builds sharing output artifacts serialized.
+
+On the matching completion notification, checkpoint the next-unit work and
+return to the measured unit promptly. Check warnings, structure/locals, bytes
+and global regressions; fix remaining mismatches and rebuild as needed. Keep
+prepared work queued across those iterations. Integrate one unit at a time into
+the linear stack, committing only source with its own full-build README and
+ledger. Preparation is not measured completion.
+
+Do not sleep, repeatedly poll sessions/logs/processes/services, or send waiting
+updates. A launcher exit or automatic goal continuation is not build completion;
+a continuation should advance independent queued work. Keep preparation turns
+bounded: after a useful unit checkpoint, end the turn so queued completion
+messages can be delivered. This is a delivery checkpoint, not an idle wait;
+if the next turn has no completion event, continue useful queued work. Otherwise
+yield only when no useful independent work remains or user input is required,
+not merely because a build is running. Keep the full goal active while awaiting
+results; waiting alone is not a blocker. This rule applies to every matcher,
+reviewer, skill and build caller.
+
 ## The ledger (`config/match_state.tsv`)
 
 The committed record: one row per target function. `vostok ledger` reads the
