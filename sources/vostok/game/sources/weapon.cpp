@@ -287,9 +287,9 @@ float4x4 weapon::calculate_locator(
 	static float4x4 add = math::create_rotation_y( math::pi );
 
 	if ( locator.m_bone == 0xffff )
-		return math::mul4x3( math::mul4x3( locator.m_offset, add ), weapon_core::m_transform );
+		return math::mul4x3( math::mul4x3( add, locator.m_offset ), weapon_core::m_transform );
 
-	return math::mul4x3( math::mul4x3( matrices[ locator.m_bone ], weapon_core::m_transform ), math::mul4x3( locator.m_offset, add ) );
+	return math::mul4x3( math::mul4x3( math::mul4x3( add, locator.m_offset ), matrices[ locator.m_bone ] ), weapon_core::m_transform );
 }
 
 void weapon::on_show( )
