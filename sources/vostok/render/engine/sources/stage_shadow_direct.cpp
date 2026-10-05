@@ -527,7 +527,7 @@ void stage_shadow_direct::execute_cascade( u32 cascade_id, u32 cascade_index, u3
 			if ( cascade_id < m_context->m_sun_cascades.size( ) - 1 )
 				m_context->m_sun_cascades[cascade_id + 1].rays = cascade_volume.view_frustum_rays;
 
-			m_previous_real_view_matrix[cascade_index] = m_context->get_v( );
+			m_previous_real_view_matrix[cascade_index] = m_context->get_v_inverted( );
 		}
 	}
 
