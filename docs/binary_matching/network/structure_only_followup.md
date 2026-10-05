@@ -176,3 +176,11 @@ it. The macro therefore supplies the missing syntactic use. Sibling engine code
 uses this idiom, including logging/log_file.cpp's ASSERT_U(success). No shared
 macro is changed. Exact original spelling, emitted bytes and warning suppression
 remain unverified; keep both review questions open until measurement is allowed.
+
+Resolved 2026-10-06 by measurement: ASSERT_U is wrong at both sites. Retail
+records one 12-byte statement on check_consistency's line 196 and on
+handle_send's line 102 (line 103 empty); plain ASSERT compiles to exactly that,
+while ASSERT_U's retained expression_eater call compiles to 71/73 bytes and
+cost check_consistency 99.94 -> 44.36 and handle_send 96.95 -> 91.54. Both
+sites use ASSERT again; the assertion-only locals stay unreferenced in release
+exactly as retail's.

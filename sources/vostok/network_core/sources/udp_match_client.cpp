@@ -174,12 +174,11 @@ void udp_match_client::send_queued_packets( const u32 current_time_in_ms )
 #line 152
 
 void udp_match_client::check_consistency( ) const
-// sushi@TODO: Verify the assertion macro spelling; ASSERT_U accounts for both assertion-only locals.
 #line 193
 {
 	u32 const registered_packets_count	= m_packets_allocator.allocated_size( ) / sizeof( udp_match_packet );
 	u32 const allocated_count			= ( m_network_flow_emulator ? m_network_flow_emulator->delayed_packets_count( ) : 0 ) + m_connection.packets_count( );
-	ASSERT_U( UNKNOWN_EXPRESSION_T( registered_packets_count == allocated_count ) );
+	ASSERT( UNKNOWN_EXPRESSION_T( registered_packets_count == allocated_count ) );
 }
 #line 161
 
