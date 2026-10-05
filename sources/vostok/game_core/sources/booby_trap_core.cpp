@@ -331,9 +331,9 @@ void booby_trap_core::serialize( network_core::udp_match_packet& packet ) const
 	ASSERT( UNKNOWN_EXPRESSION );
 	m_owner->serialize_game_world_object_header( *this, packet );
 
-	packet.append( m_trap_state );
-	packet.append( (math::float3 const&)m_transform.c ); // sushi@TODO: implausible spelling - float4x4 should expose a getter (cf. get_angles_xyz below); find the real translation accessor and respell
-	packet.append( m_transform.get_angles_xyz( ) );
+	packet.append( u8( m_trap_state ) );
+	packet.append( (math::float3 const&)m_transform.c ); // sushi@TODO: implausible spelling - float4x4 should expose a getter (cf. get_angles below); find the real translation accessor and respell
+	packet.append( m_transform.get_angles( math::rotation_zxy ) );
 }
 
 void booby_trap_core::deserialize( network_core::packet_reader& reader )
