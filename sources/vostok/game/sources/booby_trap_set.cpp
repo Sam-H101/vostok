@@ -43,16 +43,6 @@ void booby_trap_set::action( bool key_down )
 		toggle_ghost_model( key_down );
 }
 
-// claude@NOTE: front half (lines 58-68) reconstructed; the back half is a cross-module
-// wall. The target's last two statements (lines 71-72) push this->profile_slot_id() into
-// a vectora held on base_network_client::m_current_player ([client+8] -> player[+0x208]),
-// gated by is_player_current(player->id). m_current_player is a PROTECTED member of
-// base_network_client (network-client carcass module) and the target reuses the same
-// player register the inlined is_player_current() leaves behind, so the push cannot be
-// expressed here without either friending base_network_client or a public accessor that
-// returns the live current player. NEXT: add a base_network_client accessor (or friend)
-// exposing m_current_player + the player's placed-slot vectora, both in the network-client
-// layer, then the if(is_player_current(...)) { current_player->...push_back(profile_slot_id()) }.
 void booby_trap_set::on_trap_placed_message( u8 index, float3 const& position, float3 const& angles )
 {
 	booby_trap_core_ptr trap = traps( )[ index ];
@@ -62,6 +52,9 @@ void booby_trap_set::on_trap_placed_message( u8 index, float3 const& position, f
 	insert_trap( *trap, transform );
 
 	--m_amount;
+
+	if ( m_game_world.get_game( ).get_network_client( )->is_player_current( m_inventory->holder( ).cast_to_base_player( )->id ) )
+		m_game_world.game_ui.add_quick_slot_to_update( profile_slot_id( ) );
 }
 
 // claude@NOTE: the three on_trap_*_message bodies are structurally faithful (1 stmt,
