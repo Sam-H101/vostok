@@ -109,7 +109,7 @@ animation::mixing::expression weapon_core_fire_state::get_user_hands_expression(
 ) const
 {
 	if ( user_state_id == type_sprint )
-		return animation::mixing::expression( weapon_lexeme );
+		return animation::mixing::expression( );
 
 	u32 user_animation_index = ( user_state_id == type_crouch );
 
@@ -117,7 +117,7 @@ animation::mixing::expression weapon_core_fire_state::get_user_hands_expression(
 		m_user_animations[is_third_view != false][user_animation_index];
 
 	if ( resources::pinned_ptr_const< animation::cubic_spline_skeleton_animation >( selected_animation )->animation_type( ) != animation::animation_type_additive )
-		return animation::mixing::expression( weapon_lexeme );
+		return animation::mixing::expression( );
 
 	pcstr user_animation_captions[2] = { "stand_shoot", "crouch_shoot" };
 
