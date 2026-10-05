@@ -408,9 +408,9 @@ void stage_light_propagation_volumes::render_to_rms_smoothed2(
 
 	if ( render_stage_index == 0 )
 	{
-		device::ref( ).d3d_context( )->CopyResource( m_radiance_volume[cascade_index].m_t_rms_albedo_source_temp->hw_texture( ), m_radiance_volume[cascade_index].m_t_rms_albedo_source->hw_texture( ) );
-		device::ref( ).d3d_context( )->CopyResource( m_radiance_volume[cascade_index].m_t_rms_normal_source_temp->hw_texture( ), m_radiance_volume[cascade_index].m_t_rms_normal_source->hw_texture( ) );
-		device::ref( ).d3d_context( )->CopyResource( m_radiance_volume[cascade_index].m_t_rms_position_source_temp->hw_texture( ), m_radiance_volume[cascade_index].m_t_rms_position_source->hw_texture( ) );
+		device::ref( ).d3d_context( )->CopyResource( m_radiance_volume[cascade_index].m_t_rms_albedo_source->hw_texture( ), m_radiance_volume[cascade_index].m_t_rms_albedo_source_temp->hw_texture( ) );
+		device::ref( ).d3d_context( )->CopyResource( m_radiance_volume[cascade_index].m_t_rms_normal_source->hw_texture( ), m_radiance_volume[cascade_index].m_t_rms_normal_source_temp->hw_texture( ) );
+		device::ref( ).d3d_context( )->CopyResource( m_radiance_volume[cascade_index].m_t_rms_position_source->hw_texture( ), m_radiance_volume[cascade_index].m_t_rms_position_source_temp->hw_texture( ) );
 
 		backend::ref( ).set_render_targets( &*m_radiance_volume[cascade_index].m_rt_rms_albedo_source_temp, &*m_radiance_volume[cascade_index].m_rt_rms_normal_source_temp, &*m_radiance_volume[cascade_index].m_rt_rms_position_source_temp, 0 );
 		backend::ref( ).clear_render_targets( 0.0f, 0.0f, 0.0f, 0.0f );
