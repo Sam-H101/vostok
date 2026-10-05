@@ -15,10 +15,53 @@
 #include <vostok/math_constants.h>
 #include <vostok/resources.h>
 #include <vostok/render/facade/common_types.h>
+#include <vostok/command_line_extensions.h>
 
 #include <boost/bind.hpp>
 
 namespace survarium {
+
+// claude@NOTE: dev-only, not in retail. -autologin[=name:password] signs in once the login
+// movie is up (no clicking), falling back to the user.cfg-saved credentials, then dev/dev.
+static vostok::command_line::key s_autologin( "autologin", "", "", "sign in automatically (dev)" );
+static bool s_autologin_done = false;
+
+static void autologin( game& g, flash_movie* movie )
+{
+	network::login_client& login_client = g.get_network_client( )->login_client( );
+
+	char name[ 128 ] = "";
+	char password[ 128 ] = "";
+	fixed_string< 256 > value;
+	if ( s_autologin.is_set_as_string( &value ) && value.length( ) )
+	{
+		strings::copy( name, value.c_str( ) );
+		if ( char* colon = strchr( name, ':' ) )
+		{
+			*colon = 0;
+			strings::copy( password, colon + 1 );
+		}
+	}
+	else
+	{
+		strings::copy( name, login_client.account_name( ) );
+		strings::copy( password, login_client.account_password( ) );
+	}
+	if ( !name[ 0 ] )
+	{
+		strings::copy( name, "dev" );
+		strings::copy( password, "dev" );
+	}
+
+	flash_value sign_in_button_enable;
+	sign_in_button_enable.SetBoolean( false );
+	movie->SetVariable( "root.sign_in_btn.enabled", sign_in_button_enable );
+	movie->SetVariable( "root.login_input.text", name );
+	movie->SetVariable( "root.password_input.text", password );
+	movie->SetVariable( "root.status_str.text", "Connecting..." );
+
+	g.get_network_client( )->connect_to_login( login_client.m_server_host, login_client.m_server_port, name, password );
+}
 
 // claude@NOTE: structures match; the byte residual on on_activate/on_deactivate/tick/
 // clear_resources/enable_button is a cross-module cap - base_game_scene::on_activate/
@@ -67,6 +110,12 @@ void login_menu::tick(
 	float deltaTime = frame_delta_in_ms * math::epsilon_3;
 	m_login_menu_ui->movie->Advance( deltaTime, 0 );
 	m_cursor_ui->movie->Advance( deltaTime, 0 );
+
+	if ( !s_autologin_done && !action_blocked( ) && s_autologin.is_set( ) )
+	{
+		s_autologin_done = true;
+		autologin( get_game( ), m_login_menu_ui->movie );
+	}
 }
 
 void login_menu::query_resources( )
