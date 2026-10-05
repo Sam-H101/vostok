@@ -180,6 +180,7 @@ void network_client::on_connected_to_login(
 	const login_server_message_types_enum	message_type
 )
 {
+	login_menu_status_enum status = login_menu_status_error_connection;
 	switch ( connection_error )
 	{
 	case successfully_connected:
@@ -191,7 +192,6 @@ void network_client::on_connected_to_login(
 			{
 			case no_socket_error:
 				{
-					login_menu_status_enum status;
 					switch ( message_type )
 					{
 					case servers_connection_info_message_type:
@@ -234,7 +234,6 @@ void network_client::on_connected_to_login(
 						status = login_menu_status_error_connection;
 						break;
 					}
-					m_game.switch_to_login( status );
 				}
 				break;
 
@@ -270,6 +269,7 @@ void network_client::on_connected_to_login(
 		LOG_ERROR( "game: unexpected socket error type" );
 		break;
 	}
+	m_game.switch_to_login( status );
 }
 
 
