@@ -11,6 +11,7 @@
 #include <vostok/animation/mixing_animation_lexeme.h>
 #include <vostok/animation/mixing_animation_lexeme_parameters.h>
 #include <vostok/animation/base_interpolator.h>
+#include <vostok/animation/linear_interpolator.h>
 #include <vostok/resources_unmanaged_allocator.h>
 #include <vostok/animation/cubic_spline_skeleton_animation.h>
 
@@ -42,7 +43,7 @@ expression single_animation::emit	( mutable_buffer& buffer, bool& is_last_animat
 		request_path(),
 		m_animation, NULL, NULL
 	);
-	animation_lexeme				lexeme( parameters );
+	animation_lexeme				lexeme( parameters.weight_interpolator( linear_interpolator( 0.25f ) ) );
 	return							expression( lexeme );
 }
 
@@ -55,7 +56,7 @@ expression single_animation::emit	( mutable_buffer& buffer, animation_lexeme& ti
 		m_animation,
 		&time_driving_animation, NULL
 	);
-	animation_lexeme				lexeme( parameters );
+	animation_lexeme				lexeme( parameters.weight_interpolator( linear_interpolator( 0.25f ) ) );
 	return							expression( lexeme );
 }
 
