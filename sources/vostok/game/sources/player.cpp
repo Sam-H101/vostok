@@ -403,8 +403,8 @@ void player::render( const u32 __formal, const u32 current_time_in_ms )
 			{
 				render::trample_desc trample;
 				trample.position = m_current.transform.c.xyz( );
-				trample.radius = 0.f;
-				trample.multiplier = 0.5f;
+				trample.radius = 0.5f;
+				trample.multiplier = 1.f;
 				m_game_scene.scene_renderer( ).add_vegetation_trample( scene, trample );
 			}
 		}
