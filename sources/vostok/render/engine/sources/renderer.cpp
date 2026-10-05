@@ -1055,7 +1055,7 @@ void renderer::render(
 	}
 
 	backend::ref( ).set_render_targets( &*m_renderer_context->get_rt( rt_generic_0 ), &*m_renderer_context->get_rt( rt_generic_1 ), 0, 0 );
-	backend::ref( ).clear_render_targets( math::color( 0.f, 0.f, 0.f, 0.f ) );
+	backend::ref( ).clear_render_targets( 0.f, 0.f, 0.f, 0.f );
 	fill_opaque_models			( );
 
 	backend::ref( ).disable_DrawIndexed = false;
