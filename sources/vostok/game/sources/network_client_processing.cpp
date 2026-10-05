@@ -566,7 +566,7 @@ void network_client::tick( const u32 current_time_in_ms, const bool is_game_paus
 				lobby_client( ).connection_info( ).need_resolve =
 					!http_query_server_connection_info( 2 );
 				lobby_resolve_time = current_time_in_ms;
-				LOG_WARNING( "LOBBY: try reconnect" );
+				LOG_INFO( "LOBBY: try reconnect" );
 			}
 		}
 		else
