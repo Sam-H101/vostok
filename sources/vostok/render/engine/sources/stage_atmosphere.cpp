@@ -161,7 +161,7 @@ void stage_atmosphere::execute( )
 			float sun_int = sun ? sun->intensity : 1.0f;
 			backend::ref( ).set_ps_constant( m_to_sun_direction_parameter, float4( to_sun_direction, sun_int ) );
 			backend::ref( ).set_ps_constant( m_c_atmosphere_parameters, float4( pp_parameters.atmosphere_kresun_multiplier, pp_parameters.atmosphere_kmesun_multiplier, pp_parameters.atmosphere_kr4pi_multiplier, pp_parameters.atmosphere_km4pi_multiplier ) );
-			fill_surfaces( m_context->get_rt( rt_mie_scattering ), m_context->get_rt( rt_rayleigh_scattering ), false );
+			fill_surfaces( m_context->get_rt( rt_rayleigh_scattering ), m_context->get_rt( rt_mie_scattering ), false );
 
 			m_context->get_scene_view( )->m_atmosphere_prev_targets_size = m_context->m_targets->get_id( );
 		}
