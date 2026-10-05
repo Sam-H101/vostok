@@ -332,15 +332,15 @@ void backend::flush( )
 			{
 				ID3DVertexBuffer * buffer = (m_vb == (untyped_buffer*)NULL) ? NULL : m_vb->hardware_buffer();
 				device::ref().d3d_context()->IASetVertexBuffers( 0, 1, &buffer, &m_vb_stride, &m_vb_offset);
+
+
+
+			if( m_dirty_objects.vertex_buffer_stream_1)
+			{
+				ID3DVertexBuffer * buffer = (m_vb_stream_1 == (untyped_buffer*)NULL) ? NULL : m_vb_stream_1->hardware_buffer();
+				device::ref().d3d_context()->IASetVertexBuffers( 1, 1, &buffer, &m_vb_stride_stream_1, &m_vb_offset_stream_1);
 			}
-		}
-
-		if( m_dirty_objects.vertex_buffer_stream_1)
-		{
-			ID3DVertexBuffer * buffer = (m_vb_stream_1 == (untyped_buffer*)NULL) ? NULL : m_vb_stream_1->hardware_buffer();
-			device::ref().d3d_context()->IASetVertexBuffers( 1, 1, &buffer, &m_vb_stride_stream_1, &m_vb_offset_stream_1);
-		}
-
+			}	}
 		if( m_dirty_objects.index_buffer)
 		{
 			ID3DIndexBuffer * buffer = (m_ib == (untyped_buffer*)NULL) ? NULL : m_ib->hardware_buffer();
