@@ -238,7 +238,7 @@ void chat_handler::set_mode( bool is_game_mode )
 
 	chat_tab game_menu_tabs[ 2 ] =
 	{
-		{ "st_chat_channel_team",	"White",	is_game_mode ? ( m_game.get_network_client( )->messaging_client( ).local_player_team( ) != team_1 ? 7 : 6 ) : 6,	"/team" },
+		{ "st_chat_channel_team",	"White",	is_game_mode ? ( m_game.get_network_client( )->messaging_client( ).local_player_team( ) != team_1 ? 7 : 6 ) : 9,	"/team" },
 		{ "st_chat_channel_match",	"White",	5,	"/all" },
 	};
 
@@ -275,10 +275,10 @@ void chat_handler::set_mode( bool is_game_mode )
 		chat_tab_member.SetString( current_tabs[ i ].color );
 		chat_tab_value.SetMember( "color", chat_tab_member );
 
-		chat_tab_member.SetInt( current_tabs[ i ].id );
+		chat_tab_member.SetUInt( current_tabs[ i ].id );
 		chat_tab_value.SetMember( "id", chat_tab_member );
 
-		chat_tab_member.SetInt( current_tabs[ i ].id );
+		chat_tab_member.SetUInt( current_tabs[ i ].id );
 		chat_tab_value.SetMember( "icon", chat_tab_member );
 
 		if( strcmp( current_tabs[ i ].key, "" ) != 0 )
