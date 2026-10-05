@@ -118,7 +118,8 @@ void object_decal::insert( )
 			m_projection_on_static_geometry,
 			m_projection_on_speedtree_geometry,
 			m_projection_on_skeleton_geometry,
-			m_projection_on_particle_geometry
+			m_projection_on_particle_geometry,
+			m_draw_priority
 		)
 	);
 }
