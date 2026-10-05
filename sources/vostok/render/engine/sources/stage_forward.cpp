@@ -132,7 +132,7 @@ void stage_forward::accumulate_local_reflections( )
 			&*m_context->get_rt( rt_local_reflection_result_params ),
 			0,
 			0
-		); backend::ref( ).reset_depth_stencil_target( );
+		); backend::ref( ).set_depth_stencil_target( 0 );
 	}
 
 	for ( ; it_d != end_d; ++it_d )
@@ -165,8 +165,8 @@ void stage_forward::accumulate_local_reflections( )
 				m_context->get_scene_view( )->post_process_parameters( ).environment_far_fog_distance
 			)
 		);
-		backend::ref( ).set_ps_constant( m_near_fog_distance, m_context->get_scene_view( )->post_process_parameters( ).environment_near_fog_distance );
 		backend::ref( ).set_ps_constant( m_fog_alpha, m_context->get_scene_view( )->post_process_parameters( ).environment_fog_alpha );
+		backend::ref( ).set_ps_constant( m_near_fog_distance, m_context->get_scene_view( )->post_process_parameters( ).environment_near_fog_distance );
 		backend::ref( ).set_ps_constant( m_use_rain_parameter, use_rain );
 
 		backend::ref( ).render_indexed(
