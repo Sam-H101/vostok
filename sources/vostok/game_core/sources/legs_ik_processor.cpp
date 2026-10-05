@@ -167,10 +167,10 @@ void legs_ik_processor::process_leg(
 	float4x4				foot_obj_matrix		= matrices[foot_matrix_index] * leg_obj_matrix;
 	float4x4				toe_obj_matrix		= matrices[toe_matrix_index] * foot_obj_matrix;
 
-	if ( math::is_similar( target_foot_obj_matrix.i.xyz( ), foot_obj_matrix.i.xyz( ), math::epsilon_3 ) &&
-		 math::is_similar( target_foot_obj_matrix.j.xyz( ), foot_obj_matrix.j.xyz( ), math::epsilon_3 ) &&
-		 math::is_similar( target_foot_obj_matrix.k.xyz( ), foot_obj_matrix.k.xyz( ), math::epsilon_3 ) &&
-		 math::is_similar( target_foot_obj_matrix.c.xyz( ), foot_obj_matrix.c.xyz( ), math::epsilon_3 ) )
+	if ( math::is_similar( foot_obj_matrix.i.xyz( ), target_foot_obj_matrix.i.xyz( ), math::epsilon_3 ) &&
+		 math::is_similar( foot_obj_matrix.j.xyz( ), target_foot_obj_matrix.j.xyz( ), math::epsilon_3 ) &&
+		 math::is_similar( foot_obj_matrix.k.xyz( ), target_foot_obj_matrix.k.xyz( ), math::epsilon_3 ) &&
+		 math::is_similar( foot_obj_matrix.c.xyz( ), target_foot_obj_matrix.c.xyz( ), math::epsilon_3 ) )
 		return;
 
 	if ( s_ik_legs_debug_draw_value && m_drawer )
@@ -196,7 +196,7 @@ void legs_ik_processor::process_leg(
 		float3 const&			original_up_leg_dir				= math::normalize( knee_obj_matrix.c.xyz( ) - up_leg_obj_matrix.c.xyz( ) );
 		float3 const&			target_up_leg_dir				= math::normalize( foot_obj_matrix.c.xyz( ) - up_leg_obj_matrix.c.xyz( ) );
 
-		if ( !math::is_similar( target_up_leg_dir, original_up_leg_dir, math::epsilon_3 ) )
+		if ( !math::is_similar( original_up_leg_dir, target_up_leg_dir, math::epsilon_3 ) )
 			params.rotation_axis	= math::normalize( original_up_leg_dir ^ target_up_leg_dir );
 
 		float4x4 const&			alpha_rotation_matrix			= math::create_rotation( params.rotation_axis, up_leg_alpha_angle );
@@ -278,8 +278,8 @@ float4x4 legs_ik_processor::get_foot_fixed_transform(
 	float4x4 const&			foot_world_matrix				= matrices[params.foot_bone_index   - m_skeleton->get_root_bones_count( )] * leg_world_matrix;
 	float4x4 const&			toe_world_matrix				= matrices[params.toe_bone_index    - m_skeleton->get_root_bones_count( )] * foot_world_matrix;
 
-	if ( math::is_similar( foot_world_matrix.c.xyz( ), toe_world_matrix.c.xyz( ) ) ||
-		 math::is_similar( foot_world_matrix.c.xyz( ), leg_world_matrix.c.xyz( ) ) )
+	if ( math::is_similar( toe_world_matrix.c.xyz( ), foot_world_matrix.c.xyz( ) ) ||
+		 math::is_similar( leg_world_matrix.c.xyz( ), foot_world_matrix.c.xyz( ) ) )
 		return foot_world_matrix;
 
 	float3 const&			foot_to_toe_dir					= math::normalize( toe_world_matrix.c.xyz( ) - foot_world_matrix.c.xyz( ) );
@@ -352,15 +352,15 @@ float4x4 legs_ik_processor::get_foot_fixed_transform(
 	float const				up_leg_len						= matrices[params.leg_bone_index    - m_skeleton->get_root_bones_count( )].c.xyz( ).length( );
 	float const				knee_len						= matrices[params.foot_bone_index   - m_skeleton->get_root_bones_count( )].c.xyz( ).length( );
 
-	float const				up_leg_to_fixed_foot_dist		= ( up_leg_world_matrix.c.xyz( ) - foot_center_transform.c.xyz( ) ).length( );
+	float const				up_leg_to_fixed_foot_dist		= ( foot_center_transform.c.xyz( ) - up_leg_world_matrix.c.xyz( ) ).length( );
 	delta_len			= leg_len + up_leg_len + knee_len - up_leg_to_fixed_foot_dist;
 
-	float const				up_leg_to_original_foot_dist_sqr	= ( up_leg_world_matrix.c.xyz( ) - foot_world_matrix.c.xyz( ) ).squared_length( );
+	float const				up_leg_to_original_foot_dist_sqr	= ( foot_world_matrix.c.xyz( ) - up_leg_world_matrix.c.xyz( ) ).squared_length( );
 
 	if ( math::sqr( up_leg_to_fixed_foot_dist ) > up_leg_to_original_foot_dist_sqr && params.heel_transition_time != 0.0f )
 	{
 		float const			position_iterpolation_koef		= m_heel_interpolator.interpolated_value( params.heel_transition_time );
-		float3 const&		position						= foot_world_matrix.c.xyz( ) * position_iterpolation_koef + foot_center_transform.c.xyz( ) * ( 1.0f - position_iterpolation_koef );
+		float3 const&		position						= foot_center_transform.c.xyz( ) * ( 1.0f - position_iterpolation_koef ) + foot_world_matrix.c.xyz( ) * position_iterpolation_koef;
 		foot_center_transform.c.xyz( )	= position;
 	}
 
