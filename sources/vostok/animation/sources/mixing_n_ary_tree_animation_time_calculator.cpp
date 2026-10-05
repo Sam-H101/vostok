@@ -72,11 +72,11 @@ float n_ary_tree_animation_time_calculator::computed_animation_time	(
 	)
 {
 	if ( !m_animation.time_calculator() )
-		return								animation_time_before_scale_starts + (current_time_in_ms - time_scale_start_time_in_ms)*time_scale/1000.f;
+		return								animation_time_before_scale_starts + (target_time_in_ms - time_scale_start_time_in_ms)*time_scale/1000.f;
 
 	return									m_animation.time_calculator()(
-												animation_time_before_scale_starts,
 												m_animation.animation_intervals()->length(),
+												animation_time_before_scale_starts,
 												time_scale_start_time_in_ms,
 												current_time_in_ms,
 												target_time_in_ms,
@@ -110,8 +110,8 @@ void n_ary_tree_animation_time_calculator::visit		( n_ary_tree_time_scale_node& 
 	m_animation_time						= computed_animation_time(
 		node.animation_time_before_scale_starts( ),
 		node.time_scale_start_time_in_ms( ),
-		m_target_time_in_ms,
 		m_start_time_in_ms,
+		m_target_time_in_ms,
 		node.time_scale( )
 	);
 	m_animation_time						= math::min( math::max( m_animation_time, 0.f ), m_animation_interval_length);
@@ -146,8 +146,8 @@ void n_ary_tree_animation_time_calculator::visit		( n_ary_tree_time_scale_transi
 		m_animation_time					= computed_animation_time(
 			m_animation_time,
 			m_start_time_in_ms + i*integration_interval_length_in_ms,
-			i < full_intervals_count ? m_start_time_in_ms + (i+1)*integration_interval_length_in_ms : m_target_time_in_ms,
 			m_start_time_in_ms + i*integration_interval_length_in_ms,
+			i < full_intervals_count ? m_start_time_in_ms + (i+1)*integration_interval_length_in_ms : m_target_time_in_ms,
 			time_scale_node ? time_scale_calculator.time_scale( ) : 1.f
 		);
 		m_animation_time					= math::min( math::max( m_animation_time, 0.f ), m_animation_interval_length);
