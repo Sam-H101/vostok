@@ -181,11 +181,16 @@ void n_ary_tree::set_object_transform( n_ary_tree_animation_node& animation_node
 
 void n_ary_tree::set_object_transform( pcvoid const animated_object, float4x4 const& object_transform )
 {
+	if ( !m_weight_root )
+		return;
+
 	for ( n_ary_tree_animation_node* i = m_weight_root; i; i = i->m_next_weight_animation )
 		if ( i->animated_object( ) == animated_object )
 			set_object_transform	( *i );
 
-	animated_object_holder* const j = std::find( m_animated_objects, m_animated_objects + m_animated_objects_count, animated_object );
+	animated_object_holder* const j = std::find(
+		m_animated_objects, m_animated_objects + m_animated_objects_count, animated_object
+	);
 	j->transform				= object_transform;
 }
 
