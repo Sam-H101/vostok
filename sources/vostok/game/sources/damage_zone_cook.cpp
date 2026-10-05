@@ -48,7 +48,7 @@ void damage_zone_cook::on_sub_resources_loaded( resources::queries_result& data,
 	vector< resources::unmanaged_resource_ptr > resources;
 
 	for ( u32 n = data.size( ),
-		i = 0; i != n; ++i )
+		i = 1; i != n; ++i )
 		resources.push_back( data[i].get_unmanaged_resource( ) );
 
 	static u32 start_light_id = 1024;
