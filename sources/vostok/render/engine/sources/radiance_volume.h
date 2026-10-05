@@ -127,17 +127,17 @@ struct radiance_volume : public boost::noncopyable {
 
 	res_texture_ptr const& get_accumulated_propagation_r( ) const
 	{
-		return m_3d_t_accumulated_propagation_r;
+		return m_3d_t_radiance_r_apply;
 	}
 
 	res_texture_ptr const& get_accumulated_propagation_g( ) const
 	{
-		return m_3d_t_accumulated_propagation_g;
+		return m_3d_t_radiance_g_apply;
 	}
 
 	res_texture_ptr const& get_accumulated_propagation_b( ) const
 	{
-		return m_3d_t_accumulated_propagation_b;
+		return m_3d_t_radiance_b_apply;
 	}
 
 	void inject_lighting(
