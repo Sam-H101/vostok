@@ -124,14 +124,14 @@ animation::mixing::expression pistol_weapon_core_aimed_fire_state::get_user_hand
 ) const
 {
 	if ( user_state_id == type_sprint )
-		return animation::mixing::expression( weapon_lexeme );
+		return animation::mixing::expression( );
 
 	u32 user_animation_index = ( user_state_id == type_crouch );
 	resources::managed_resource_ptr const& selected_animation =
 		m_user_animations[is_third_view != false][user_animation_index];
 
 	if ( resources::pinned_ptr_const< animation::cubic_spline_skeleton_animation >( selected_animation )->animation_type( ) != animation::animation_type_additive )
-		return animation::mixing::expression( weapon_lexeme );
+		return animation::mixing::expression( );
 
 	pcstr user_animation_captions[2] = { "aimed_stand_shot_pistol", "aimed_crouch_shot_pistol" };
 

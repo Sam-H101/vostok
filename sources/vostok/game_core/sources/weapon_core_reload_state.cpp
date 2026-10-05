@@ -98,7 +98,7 @@ animation::mixing::expression weapon_core_reload_state::get_user_hands_expressio
 ) const
 {
 	if ( user_state_id == type_sprint )
-		return weapon_lexeme;
+		return animation::mixing::expression( );
 
 	ASSERT( UNKNOWN_EXPRESSION );
 

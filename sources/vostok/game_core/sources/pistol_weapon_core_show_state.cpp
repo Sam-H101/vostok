@@ -117,7 +117,7 @@ animation::mixing::expression pistol_weapon_core_show_state::get_user_hands_expr
 ) const
 {
 	if ( user_state_id == type_sprint )
-		return weapon_lexeme;
+		return animation::mixing::expression( );
 
 	u32 const user_animation_index = user_state_id == type_crouch;
 

@@ -126,7 +126,7 @@ animation::mixing::expression double_barreled_weapon_core_hide_state::get_user_h
 ) const
 {
 	if ( user_state_id == type_sprint )
-		return weapon_lexeme;
+		return animation::mixing::expression( );
 
 	u32 const user_state_index = user_state_id == type_crouch;
 

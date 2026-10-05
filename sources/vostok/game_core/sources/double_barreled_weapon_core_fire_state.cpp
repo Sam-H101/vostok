@@ -126,7 +126,7 @@ animation::mixing::expression double_barreled_weapon_core_fire_state::get_user_h
 ) const
 {
 	if ( user_state_id == type_sprint )
-		return animation::mixing::expression( weapon_lexeme );
+		return animation::mixing::expression( );
 
 	u32 user_animation_index = ( user_state_id == type_crouch );
 
@@ -134,7 +134,7 @@ animation::mixing::expression double_barreled_weapon_core_fire_state::get_user_h
 		m_user_animations[is_third_view != false][user_animation_index];
 
 	if ( resources::pinned_ptr_const< animation::cubic_spline_skeleton_animation >( selected_animation )->animation_type( ) != animation::animation_type_additive )
-		return animation::mixing::expression( weapon_lexeme );
+		return animation::mixing::expression( );
 
 	pcstr user_animation_captions[2] = { "stand_shot_double_barrel", "crouch_shot_double_barrel" };
 

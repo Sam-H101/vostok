@@ -102,7 +102,7 @@ animation::mixing::expression weapon_core_hide_state::get_user_hands_expression(
 ) const
 {
 	if ( user_state_id == type_sprint )
-		return weapon_lexeme;
+		return animation::mixing::expression( );
 
 	ASSERT( UNKNOWN_EXPRESSION );
 

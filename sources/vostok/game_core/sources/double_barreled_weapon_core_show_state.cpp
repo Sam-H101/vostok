@@ -121,7 +121,7 @@ animation::mixing::expression double_barreled_weapon_core_show_state::get_user_h
 ) const
 {
 	if ( user_state_id == type_sprint )
-		return weapon_lexeme;
+		return animation::mixing::expression( );
 
 	// target attributes the two caption stores to ONE line (single-line brace-init, 0xe stmt)
 	// and declares the array BEFORE user_state_index; PDB records both locals const.
