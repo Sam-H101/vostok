@@ -42,11 +42,11 @@ inline void weapon_core_state_cook_template<T>::create_resource( resources::quer
 		return;
 	}
 
-	typedef fixed_vector< resources::request, 4 >	requests_fixed_type;
+	typedef fixed_vector< resources::request, T::total_animations_count >	requests_fixed_type;
 
 	requests_fixed_type	requests;
 
-	for ( u32 i = 0; i != 4; ++i ) requests.push_back( resources::create_request( cfg["animations"][ i ], resources::animation_class ) );
+	for ( u32 i = 0; i != T::total_animations_count; ++i ) requests.push_back( resources::create_request( cfg["animations"][ i ], resources::animation_class ) );
 
 	// retail evaluates this lookup and discards the result
 	cfg.value_exists( "user_animations" );
@@ -65,10 +65,10 @@ inline void weapon_core_state_cook_template<T>::create_resource( resources::quer
 template < typename T >
 inline void weapon_core_state_cook_template<T>::on_subresources_ready( resources::queries_result& data, mutable_buffer buffer, weapon_state_creation_params const* params )
 {
-	typedef fixed_vector< resources::managed_resource_ptr, 4 >	skeleton_animations_fixed_type;
+	typedef fixed_vector< resources::managed_resource_ptr, T::total_animations_count >	skeleton_animations_fixed_type;
 
 	skeleton_animations_fixed_type	animations;
-	for ( u32 i = 0; i != 4; ++i ) animations.push_back( static_cast_resource_ptr< resources::managed_resource_ptr >( data[ i ].get_managed_resource( ) ) );
+	for ( u32 i = 0; i != T::total_animations_count; ++i ) animations.push_back( static_cast_resource_ptr< resources::managed_resource_ptr >( data[ i ].get_managed_resource( ) ) );
 
 	T* object_to_cook = new_object( buffer, params, animations.begin( ), animations.size( ) );
 
