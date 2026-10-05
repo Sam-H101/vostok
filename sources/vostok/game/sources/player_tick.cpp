@@ -369,7 +369,7 @@ void player::tick( const u32 current_time_in_ms )
 		m_current.animation_player.set_object_transform( m_current.transform, this );
 		m_target.animation_player.set_object_transform( m_target.transform, this );
 
-		are_there_any_callbacks = m_target.animation_player.tick_to_nearest_user_handled_callback( current_time_in_ms );
+		are_there_any_callbacks = m_current.animation_player.tick_to_nearest_user_handled_callback( current_time_in_ms );
 		time_in_ms = m_current.animation_player.last_tick_time_in_ms( );
 
 		const float time_delta = ( time_in_ms - previous_time_in_ms ) * 0.001f;
