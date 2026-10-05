@@ -235,7 +235,7 @@ inline float4x4 create_rotation ( float3 const& angles, vostok::math::axis_rotat
 {
 	ASSERT_U	( order == rotation_zxy);
 	float4x4	result;
-	sine_cosine	x(-angles.x), y(-angles.y), z(-angles.z);
+	sine_cosine	x(angles.x), y(angles.y), z(angles.z);
 
 	float		ysXzs = y.sine*z.sine;
 	float		ysXzc = y.sine*z.cosine;
@@ -329,14 +329,14 @@ inline float4x4 create_rotation				( float3 const& direction, float3 const& norm
 {
 	float4x4	result;
 
-	result.i	= float4( (normal ^ direction).normalize( ), 0.f );
+	float3 const i	= ( normal ^ direction ).normalize( );
+	result.i	= float4( i, 0.f );
 	result.j	= float4( normal, 0.f );
-	result.k	= float4( direction, 0.f );
+	result.k	= float4( i ^ normal, 0.f );
 	result.c	= float4( 0.f, 0.f, 0.f, 1.f );
 
-	return		( result ); 
+	return		( result );
 }
-
 inline float4x4 create_matrix				( quaternion const& q, float3 const& position )
 {
 	
