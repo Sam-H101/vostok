@@ -1144,7 +1144,7 @@ void stage_light_propagation_volumes::execute_impl( )
 
 void stage_light_propagation_volumes::execute_disabled( )
 {
-	backend::ref( ).set_render_targets( &*m_context->get_rt( rt_accumulator_diffuse ), 0, 0, 0 );
+	backend::ref( ).set_render_targets( &*m_context->get_rt( rt_lpv_accumulation ), 0, 0, 0 );
 	backend::ref( ).clear_render_targets( 0.0f, 0.0f, 0.0f, 0.0f );
 }
 
