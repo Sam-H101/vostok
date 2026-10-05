@@ -169,7 +169,7 @@ n_ary_tree_base_node* n_ary_tree_transition_tree_constructor::new_time_scale( n_
 		n_ary_tree_target_time_scale_calculator target_time_scale_calculator( *previous_time_driving_animation );
 		float const time_scale_factor	=
 			target_time_scale_calculator.result( ) * directional_time_scale_factor;
-		if ( new_time_driving_animation_target_time_scale == time_scale_factor
+		if ( new_time_driving_animation_target_time_scale != time_scale_factor
 			&& ( !target_time_scale_node || !target_time_scale_node->is_transition( ) ) )
 		{
 			base_interpolator const& interpolator	= *m_cloner.clone( *time_scale_interpolator );
