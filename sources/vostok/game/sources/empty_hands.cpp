@@ -48,10 +48,10 @@ animation::mixing::expression empty_hands::selected_animations( mutable_buffer& 
 			m_animations[ const_cast< empty_hands* >( this )->m_random.random( m_animations_count ) ],
 			NULL, NULL
 		)
+		.weight_synchronization_group_id( 0 ).time_synchronization_group_id( 0 )
 		.weight_interpolator( l_interpolator )
 		.time_scale_interpolator( l_interpolator )
 		.animated_object( m_user )
-		.unique_animation_id( u8( -1 ) )
 	);
 
 	return animation::mixing::expression( lexeme );
