@@ -386,7 +386,7 @@ void player::tick( const u32 current_time_in_ms )
 	if( are_there_any_callbacks )
 		select_animations( current_time_in_ms );
 
-	if( ( is_local && m_is_alive ) || !m_history.empty( ) )
+	if( ( is_local && m_is_alive ) || m_history.empty( ) )
 		serialize_current_state( current_time_in_ms );
 
 	if( is_local && m_is_alive )
