@@ -77,7 +77,7 @@ void stage_decals_accumulate::execute( )
 	struct sort_by_priority_predicate {
 		bool operator()( decal_instance const* const a, decal_instance const* const b )
 		{
-			return a->get_properties( ).draw_priority > b->get_properties( ).draw_priority;
+			return a->get_properties( ).draw_priority < b->get_properties( ).draw_priority;
 		}
 	};
 
