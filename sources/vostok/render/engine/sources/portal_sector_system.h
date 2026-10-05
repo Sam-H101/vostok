@@ -48,10 +48,10 @@ public:
 
 	void render( system_renderer& renderer, float3 const& view_pos, float4x4 const& matrix );
 
-	void load( configs::binary_config_value* )
-	{
-		// STATE[STUB]
-	}
+	// declared only: retail never defines or calls it
+	void load(
+		configs::binary_config_value*
+	);
 
 	void test_action( );
 
