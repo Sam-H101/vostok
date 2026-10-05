@@ -231,7 +231,7 @@ void bullet_manager::play_particle(
 		functor->position	= position;
 		functor->direction	= direction;
 		functor->direction.normalize( );
-		functor->direction	= normal;
+		functor->normal		= normal;
 		functor->normal.normalize( );
 
 		functor->functor = boost::bind(
