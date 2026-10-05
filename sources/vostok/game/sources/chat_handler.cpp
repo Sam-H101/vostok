@@ -315,7 +315,7 @@ void chat_handler::focus( bool b_focused )
 	if( m_focused == b_focused )
 		return;
 
-	if( m_game_ui_mode || b_focused )
+	if( m_game_ui_mode || !b_focused )
 	{
 		flash_value argument;
 		argument.SetBoolean( b_focused );
