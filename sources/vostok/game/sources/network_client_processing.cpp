@@ -323,13 +323,14 @@ static console_commands::cc_float3		cc_warmup_camera_target(
 
 void network_client::setup_camera_for_warmup( )
 {
-	float3 target = m_local_player->get_current( ).transform.transform_position( s_warmup_camera_target );
 	float3 position = m_local_player->get_current( ).transform.transform_position( s_warmup_camera_position );
+	float3 target = m_local_player->get_current( ).transform.transform_position( s_warmup_camera_target );
 
-	float3 direction = position - target;
+	float3 direction = target - position;
 	const float length = direction.length( );
 
-	physics::closest_ray_result ray_result = m_game.get_game_world( ).get_physics_world( )->ray_test( position, -( direction / length ), length, 16, 8 );
+	// the ray runs back from the target; direction stays normalised for the camera
+	physics::closest_ray_result ray_result = m_game.get_game_world( ).get_physics_world( )->ray_test( target, -( direction /= length ), length, 16, 8 );
 	if ( ray_result.object )
 		position = ray_result.hit_point_world + direction * 0.01f;
 
