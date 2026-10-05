@@ -27,6 +27,12 @@ Any extra args are forwarded to vostok.build.ninja:
   python3 -m vostok build            # notify on completion when CODEX_THREAD_ID is set
   python3 -m vostok build logging    # build just one project first
 
+  python3 -m vostok build --code-only
+      Iteration build: ninja, PDB evidence, structure, code COFF/report and the
+      function ledger only. Skips the data lane (manifests, data COFF/reports,
+      image-data ledger, module data audits) and the README. Function scores are
+      the same as a full build's; not a commit state - commit after a full build.
+
   python3 -m vostok build --background
       Run in a host systemd user service; notify CODEX_THREAD_ID on completion.
       Overrides: --notify-thread THREAD, --codex-bin /path/to/codex.
@@ -243,6 +249,14 @@ def _background_dispatch() -> bool:
     return False
 
 
+def _take_code_only() -> bool:
+    """Strip --code-only before the remaining arguments reach ninja."""
+    if "--code-only" not in sys.argv[1:]:
+        return False
+    sys.argv = [sys.argv[0], *(a for a in sys.argv[1:] if a != "--code-only")]
+    return True
+
+
 def main() -> None:
     # `vostok build --help` must NOT reach ninja. Everything else here is
     # forwarded verbatim, and ninja's own `--help` exits 1 - which used to
@@ -255,6 +269,7 @@ def main() -> None:
 
     if _background_dispatch():
         return
+    code_only = _take_code_only()
 
     lock = _acquire_build_lock()
     start = time.monotonic()
@@ -263,6 +278,9 @@ def main() -> None:
         log("Refreshing ninja graph from the .vcprojs ...")
         _log.timed("ninja graph", ninja_regen.regenerate)
 
+        if code_only:
+            log("code-only build: the data lane and README are skipped; this is "
+                "not a measured commit state")
         log("Building survarium via ninja ...")
         try:
             modules = _log.timed("ninja build", run_ninja)
@@ -286,7 +304,7 @@ def main() -> None:
                 failures.append("base PDB evidence")
                 log(f"base PDB evidence: FAILED - {e}")
 
-            if "base PDB evidence" not in failures:
+            if "base PDB evidence" not in failures and not code_only:
                 try:
                     from vostok.data import pipeline as data_pipeline
                     prepared_manifests = _log.timed(
@@ -345,16 +363,17 @@ def main() -> None:
 
         # Data is a separate image-level ledger: refreshing it must never alter
         # or gate the function report while the census is being calibrated.
-        try:
-            from vostok.data import pipeline as data_pipeline
-            _log.timed(
-                "image-data ledger", data_pipeline.refresh,
-                prepared=prepared_manifests,
-            )
-            log("image-data ledger refreshed (shadow mode).")
-        except (Exception, SystemExit) as e:  # noqa: BLE001 - independent shadow lane
-            log(f"WARNING: image-data ledger NOT refreshed ({e}); "
-                "refresh it with `python3 -m vostok data refresh`")
+        if not code_only:
+            try:
+                from vostok.data import pipeline as data_pipeline
+                _log.timed(
+                    "image-data ledger", data_pipeline.refresh,
+                    prepared=prepared_manifests,
+                )
+                log("image-data ledger refreshed (shadow mode).")
+            except (Exception, SystemExit) as e:  # noqa: BLE001 - independent shadow lane
+                log(f"WARNING: image-data ledger NOT refreshed ({e}); "
+                    "refresh it with `python3 -m vostok data refresh`")
 
         # `vostok build` is the canonical build step, so it also re-derives the
         # committed ledger from the report.json it just produced (the inverse of
@@ -370,6 +389,13 @@ def main() -> None:
         except (Exception, SystemExit) as e:  # noqa: BLE001 - never fail the build over the ledger
             log(f"WARNING: matching ledger NOT re-derived ({e}); "
                 "re-derive it with `python3 -m vostok derive refresh`")
+
+        if code_only:
+            # The function ledger reads only the code lane (report.json, symbol
+            # maps, PDB evidence), so it is exact; data and README stay stale.
+            log("Code-only build done - function ledger refreshed. Run a full "
+                "`vostok build` before committing.")
+            return
 
         # The direct relocation audits consume the final function ledger, so
         # refresh every ledger module after roster.regen rather than with the

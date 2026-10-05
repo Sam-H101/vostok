@@ -8,8 +8,18 @@ tools, assets) comes from the flake inside `nix develop`; never from sibling rep
 
 ## The loop
 
-    python3 -m vostok build          # notification-driven in Codex; full Wine build + refresh
-    python3 -m vostok derive refresh # re-derive the ledger from an existing report only - no rebuild
+    python3 -m vostok build             # notification-driven in Codex; full Wine build + refresh
+    python3 -m vostok build --code-only # iteration build: code lane + function ledger only
+    python3 -m vostok derive refresh    # re-derive the ledger from an existing report only - no rebuild
+
+`--code-only` runs ninja, PDB evidence, structure, the code COFF/report and the
+function ledger, and skips the data lane (data manifests, data COFF/reports,
+image-data ledger, module data audits) and the README - roughly 5 minutes of
+every build. The function ledger reads only code-lane artifacts, so `cur`, `max`,
+`hist` and `cls` are exactly what a full build would record. What it does not
+see is the data side: a change that moves which datum a function references
+shows up only in the next full build. Use it while iterating on a unit; the
+build whose README and ledger you commit must be a full `vostok build`.
 
 The objdiff config is `binaries/objdiff/objdiff.json`; each build writes
 `binaries/objdiff/report.json` and `report-changes.json`. Header edits

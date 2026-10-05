@@ -111,6 +111,13 @@ queues its exit status and log path into that existing thread, including on
 setup or build failure. No timer or model polling is involved. Existing
 per-worktree build locking still serializes the build itself.
 
+`python3 -m vostok build --code-only` is the iteration build: it stops after
+the function ledger, skipping the data lane (manifests, data COFF/reports,
+image-data ledger, module data audits) and the README. Function scores are the
+same as a full build's because the function ledger reads only code-lane
+artifacts; data-side changes appear at the next full build, which is the only
+kind whose README and ledger get committed.
+
 Build logs include `[timing]` lines for each phase, expensive delinker/report
 subprocesses, symbol inspection, and each module's data audit. Durations use a
 monotonic clock and include failures; nested/parallel timings are not additive.

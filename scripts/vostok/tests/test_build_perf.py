@@ -254,6 +254,31 @@ class BuildDependencyTests(unittest.TestCase):
         self.delink.assert_called_once_with('base')
         self.refresh.assert_not_called()
 
+    def test_code_only_skips_the_data_lane_and_readme(self):
+        self.ledger = self.patch(roster, 'regen')
+        self.gate = self.patch(gate, 'refresh')
+        self.readme = self.patch(readme, 'regen_readme')
+        seen = []
+        rebuild.run_ninja.side_effect = lambda: seen.append(list(rebuild.sys.argv)) or set()
+        with mock.patch.object(rebuild.sys, 'argv', ['build', '--code-only']):
+            rebuild.main()
+        self.assertEqual(seen, [['build']])
+        self.prepare.assert_not_called()
+        self.delink.assert_called_once_with('base')
+        self.refresh.assert_not_called()
+        self.ledger.assert_called_once_with()
+        self.gate.assert_not_called()
+        self.readme.assert_not_called()
+
+    def test_full_build_still_runs_every_lane(self):
+        self.ledger = self.patch(roster, 'regen')
+        self.readme = self.patch(readme, 'regen_readme')
+        rebuild.main()
+        self.prepare.assert_called_once_with()
+        self.assertEqual(self.delink.call_count, 3)
+        self.ledger.assert_called_once_with()
+        self.readme.assert_called_once_with()
+
 
 if __name__ == '__main__':
     unittest.main()
