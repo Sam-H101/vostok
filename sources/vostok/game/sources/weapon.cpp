@@ -289,7 +289,9 @@ float4x4 weapon::calculate_locator(
 	if ( locator.m_bone == 0xffff )
 		return math::mul4x3( math::mul4x3( add, locator.m_offset ), get_transform( ) );
 
-	return math::mul4x3( math::mul4x3( math::mul4x3( add, locator.m_offset ), matrices[ locator.m_bone ] ), get_transform( ) );
+	return math::mul4x3( math::mul4x3( math::mul4x3( add, locator.m_offset ), matrices[ locator.m_bone ] ),
+		get_transform( ) );
+
 }
 
 void weapon::on_show( )
