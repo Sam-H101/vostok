@@ -136,6 +136,27 @@ rather than bending the source to the bytes. The ledger's `cls` column
 `QUANTITY` and `SPLIT` rows are where to look first. Definitions and the deeper
 PDB tools: `docs/binary_matching/ledger_design.md`, `docs/binary_matching/vostok-pdb topology.md`.
 
+### The matching order: whitespace and statements first, then bytes
+
+This is the primary way to match. A percentage only means something on top of a
+retail partition, so never trade a structure MATCH for percentage.
+
+1. **Statements and whitespace.** Reproduce retail's statement partition *and* its
+   line geometry. Each record carries a line, so the relative lines (`t.ln`) show
+   where blank lines, split braces, declarations and comments sit. A line with no
+   record between two records is still source: a brace, a `case`/`default:` label,
+   or a statement that compiled to zero bytes (e.g. `return format;` when the value
+   is already in `eax`). Lay the source out until every record lands on retail's
+   relative line. Jump tables and other data can confirm what a gap may hold.
+2. **Statement by statement.** Once the partition matches, compare each statement's
+   bytes (`SIZE` rows, `--view target|base`, `sema blocks --diff`): operand order,
+   temporaries, by-value vs by-reference access, types.
+3. **Correctness.** Check that the matched code computes what retail's does. When our
+   LTCG makes the retail shape behave differently, keep the correct code and record
+   the wall with `vostok ledger tried`.
+
+Iterate with `vostok build --code-only`.
+
 ## Matching rules
 
 - Reproduce the shipped target exactly: bugs, dead code, odd control flow,
