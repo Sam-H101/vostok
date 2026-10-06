@@ -720,8 +720,11 @@ static u32 calc_block_size( DXGI_FORMAT format )
 	}
 }
 
-static DXGI_FORMAT find_srgb_format( DXGI_FORMAT format, bool )
+static DXGI_FORMAT find_srgb_format( DXGI_FORMAT format, bool srgb )
 {
+	if ( !srgb )
+		return format;
+
 	switch ( format ) {
 		case DXGI_FORMAT_R8G8B8A8_UNORM:
 			return DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
