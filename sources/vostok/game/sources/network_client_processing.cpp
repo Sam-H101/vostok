@@ -593,7 +593,7 @@ void network_client::tick( const u32 current_time_in_ms, const bool is_game_paus
 	{
 		m_player_inputs.clear( );
 
-		if ( current_time_in_ms - m_last_send_queued_packets_time_in_ms >= min_time_delta_in_ms )
+		if ( m_last_send_queued_packets_time_in_ms + min_time_delta_in_ms <= current_time_in_ms )
 		{
 			m_last_send_queued_packets_time_in_ms = current_time_in_ms;
 			match_client( ).send_queued_packets( current_time_in_ms );
@@ -616,8 +616,8 @@ void network_client::tick( const u32 current_time_in_ms, const bool is_game_paus
 	if ( m_is_time_synchronized_first_time && current_time_in_ms - m_last_sync_request_time > 4000 )
 		send_sync_request( );
 
-	if ( match_client( ).are_there_any_packets_to_send( ) ||
-		match_client( ).last_send_queed_packets_time_in_ms( ) + min_time_delta_in_ms <= current_time_in_ms )
+	if ( m_match_client.are_there_any_packets_to_send( ) ||
+		m_match_client.last_send_queed_packets_time_in_ms( ) + min_time_delta_in_ms <= current_time_in_ms )
 		match_client( ).send_queued_packets( current_time_in_ms );
 
 	if ( is_game_paused && m_current_player && m_current_player->has_been_inserted( ) )
