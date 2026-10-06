@@ -126,7 +126,7 @@ void game_world::add_decal(
 	float4x4 transform			= create_rotation( -normal, ( direction ^ normal ).normalize( ) );
 	transform.c.xyz( )			= position + normal * depth * 0.5f;
 
-	properties.material			= is_front_face ? resources::unmanaged_resource_ptr( ) : decal;
+	properties.material			= is_front_face ? decal : resources::unmanaged_resource_ptr( );
 
 	properties.transform		= transform;
 	properties.transform.set_scale( float3( 1.0f, 1.0f, 1.0f ) );

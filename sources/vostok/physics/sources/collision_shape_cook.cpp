@@ -95,7 +95,7 @@ void collision_shape_cook::on_collision_sources_loaded( resources::queries_resul
 			for ( u32 i = 0 ; i < size ; ++i )
 			{
 				u16 shape_mtl_idx = result->m_shapes_face_data[i];
-				pcstr maya_sg = (pcstr)primitives_config_root["mtl_list"] + 24 * shape_mtl_idx;
+				pcstr maya_sg = (pcstr)primitives_config_root["mtl_list"][shape_mtl_idx];
 				if ( mtl_bind_root.value_exists( maya_sg ) )
 					result->m_shapes_face_data[i] = (u16)mtl_bind_root[maya_sg]["game_material_id"];
 				else
