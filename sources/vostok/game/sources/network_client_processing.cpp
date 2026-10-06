@@ -285,8 +285,8 @@ void network_client::process_initialize_victory_items( network_core::packet_read
 
 void network_client::process_base_capture_progress( network_core::packet_reader& packet )
 {
-	const u32 progress = packet.r< u32 >( );
 	const u32 point_id = packet.r< u32 >( );
+	const u32 progress = packet.r< u32 >( );
 	m_game.get_game_world( ).game_ui.set_base_capture_progress( progress, point_id );
 }
 
