@@ -18,7 +18,7 @@
     vostok diff <view>             target-vs-base source shape: layout / order
                                    / tu-order / enums
     vostok tool <name>             operational helpers: clangd / toolchain /
-                                   libs / pdb-order-probe, plus `usage` - the
+                                   libs / pdb-order-probe / geometry, plus `usage` - the
                                    read-back of the usage log
 
 Every one of these processes appends a line to binaries/vostok_usage.log
@@ -47,6 +47,7 @@ TOOLS = {"clangd": "vostok.tool.clangd", "toolchain": "vostok.tool.toolchain",
          "libs": "vostok.tool.libs", "sizes": "vostok.tool.sizes",
          "breakpoints": "vostok.tool.breakpoints",
          "pdb-order-probe": "vostok.tool.pdb_order_probe",
+         "geometry": "vostok.tool.geometry",
          "usage": "vostok.tool.usage"}
 
 

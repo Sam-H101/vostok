@@ -16,4 +16,5 @@
     sizes             what the source tree costs, by extension
     breakpoints       find the target source line behind an address
     pdb_order_probe   compile and compare tiny causal PDB-order experiments
+    geometry          one function's PDB line geometry, retail beside ours
 """
