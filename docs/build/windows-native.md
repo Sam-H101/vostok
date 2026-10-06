@@ -4,9 +4,10 @@
 without Wine. It compiles much faster than under Wine, which makes it the quick route to a
 runnable `survarium-dx11-win32-gold.exe`.
 
-It builds only. Scores, the ledger and the README block come only from `python3 -m vostok build`
-(Linux/WSL with Nix): objdiff, the delinker and the PDB evidence tools are not part of it, and
-the native objects are not compared against the target. Every measured commit is built there.
+The committed scores, ledger and README block come only from `python3 -m vostok build`
+(Linux/WSL with Nix); every measured commit is built there. `score.ps1` adds an optional fast
+**preview** of a native build's scores ([Scoring preview](#scoring-preview-optional)) for quick
+feedback while editing.
 
 There are two ways to set it up:
 
@@ -28,6 +29,8 @@ Generated state stays under the gitignored `binaries/`:
 | `binaries\windows\vcproj2ninja`, `binaries\windows\rust` | Native mode: the generator, and the private nightly Rust that built it. |
 | `binaries\windows\downloads` | Native mode: the hash-checked release archives. |
 | `binaries\windows\logs` | Build logs. |
+| `binaries\windows\scoring\bin`, `binaries\windows\llvm-mingw` | Scoring preview: the tools and the C toolchain they were built with. |
+| `binaries\windows\preview` | Scoring preview: the last two preview ledgers. |
 | `binaries\ninja`, `binaries\Win32` | The graph and the build outputs. |
 
 ## Native setup (once)
@@ -104,6 +107,90 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\windows\deploy.ps1 -
   - It also copies the PDB under its linked name, so crash reports symbolize.
   - Run it with `-no_splash_screen -client=<host:port>`.
   - Add `-autologin[=name:password]`, a dev-only switch in `login_menu.cpp`, to sign in without clicking.
+
+## Scoring preview (optional)
+
+`score.ps1` scores a native build in minutes, against the hour-plus Wine run. It runs the base
+side of `vostok build` on the exe `build.ps1` produced:
+
+- PDB evidence, the code objdiff report, and the structure stubs;
+- the ledger, re-derived exactly as `vostok build` does.
+
+It then prints how the result differs from the committed `config/match_state.tsv`. It writes
+nothing that is committed: the working ledger is restored, and the preview is kept in
+`binaries\windows\preview`.
+
+It is a **preview, not a measurement**. The native link folds identical COMDATs slightly
+differently from the Wine link the ledger is measured with:
+
+- about 2% of functions score differently between the two (95.11% vs 95.19% fuzzy on the same
+  sources);
+- both are deterministic.
+
+So:
+
+- **Commit only Wine measurements.** Commits stay measured by `python3 -m vostok build`.
+- **Compare preview to preview.** Each run keeps the previous preview, and two native previews
+  of the same sources are identical. The diff `score.ps1` prints against the previous preview is
+  therefore exactly what an edit changed. The first run can only compare with the committed Wine
+  ledger, folding noise included.
+
+### Setup
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\windows\setup.ps1 -Native -Scoring
+```
+
+`-Scoring` works with either setup mode. It adds:
+
+1. **llvm-mingw** (`20260922`, UCRT, hash-checked) in `binaries\windows\llvm-mingw`. `vostok-pdb`
+   bundles SQLite, which needs a C compiler; llvm-mingw's clang also links the tools.
+2. **Rust's `x86_64-pc-windows-gnullvm` target** in the private rustup.
+3. **The scoring tools**, built with `cargo install` and copied to `binaries\windows\scoring\bin`:
+   - `vostok-pdb` from `tools/vostok-pdb`;
+   - `vostok-delinker` and `vostok-data-delinker` at their `flake.lock` revs;
+   - `objdiff-cli` at the `flake.lock` objdiff rev.
+
+   They import only system DLLs and the Universal C Runtime, which ships with Windows 10/11.
+   Building them takes a few minutes; afterwards the Rust build cache is deleted.
+
+Toolchain details, in case a nightly or llvm-mingw update breaks the build:
+
+- **Target choice.** The tools must be built for `gnullvm`. Built for the plain GNU target, with
+  the `llvm-ar` dlltool that vcproj2ninja uses, they link but crash at startup: the import stubs
+  come out broken (a DEP violation).
+- **Build scripts.** Cargo build scripts still run on the GNU host. They keep
+  `-Cdlltool=<llvm-ar copy>`, passed as `CARGO_TARGET_X86_64_PC_WINDOWS_GNU_RUSTFLAGS` so that it
+  does not reach the `gnullvm` binaries.
+- **`dlltool.exe` on PATH.** objdiff's build scripts look for `dlltool.exe` on PATH, so setup puts
+  a directory holding only that shim first. Putting all of `llvm-mingw\bin` on PATH instead makes
+  those build scripts link with its `gcc` wrapper, and they fail.
+- **Encoded rustflags in Windows PowerShell 5.1.** `CARGO_ENCODED_RUSTFLAGS` separates flags with
+  the 0x1F character. PowerShell 5.1 has no `` `u{} `` escape, so build it with `[char]0x1f`.
+
+### Run
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\windows\build.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\windows\score.ps1 -GameDir <game>\binaries\win32
+```
+
+`-GameDir`, or `SURVARIUM_BIN`, is the folder holding the original `survarium.exe` and
+`survarium.pdb`. The first run generates the target side from them: the retail COFF, structure,
+PDB evidence and data inventory, as `vostok tool toolchain` does. Later runs reuse it. `-Top N`
+lists more of the changed functions.
+
+Measured on one machine:
+
+| Run | Time |
+|---|---|
+| First run (includes generating the target side) | about 4.5 min |
+| Each later run | about 2 min |
+| `vostok build` in WSL, for comparison | over an hour |
+
+A second run on unchanged sources reports `0 functions changed`.
+
+The data lane (data COFF, image-data ledger, data gate) is not part of the preview.
 
 ## How the native graph differs from the Wine one
 

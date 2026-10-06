@@ -13,9 +13,12 @@
 # checkout (the retail source root the objects record). Each step is skipped when its output
 # already exists; -Force redoes the downloads/builds and repoints the junction.
 #
-#   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\windows\setup.ps1 -Native
+#   -Scoring (with either mode) also builds the scoring preview tools for score.ps1: llvm-mingw,
+#            the gnullvm Rust target, vostok-pdb, both delinkers and objdiff-cli.
+#
+#   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\windows\setup.ps1 -Native [-Scoring]
 #   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\windows\setup.ps1 [-Distro vostok] [-WslRepo ~/vostok]
-param([switch]$Native, [string]$Vcproj2NinjaExe = '', [string]$RustToolchain = 'nightly',
+param([switch]$Native, [switch]$Scoring, [string]$Vcproj2NinjaExe = '', [string]$RustToolchain = 'nightly',
       [string]$Distro = 'vostok', [string]$WslRepo = '~/vostok', [switch]$Force)
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
@@ -48,15 +51,9 @@ function Expand-Pinned([string]$Archive, [string]$Dest, [int]$Strip) {
     Invoke-Exe (Get-Python) @("$PSScriptRoot\unpack.py", $Archive, $Dest, $Strip)
 }
 
-function Build-Vcproj2Ninja {
-    $pin = Get-LockedRev 'vcproj2ninja-src'
-    if ($Vcproj2NinjaExe) {
-        New-Item -ItemType Directory -Force (Split-Path $Vcproj2Ninja) | Out-Null
-        Copy-Item $Vcproj2NinjaExe $Vcproj2Ninja -Force
-        Set-Content (Join-Path $Vcproj2NinjaDir 'rev') $pin.Rev
-        return "vcproj2ninja: copied $Vcproj2NinjaExe (assumed built at $($pin.Rev))"
-    }
-    # a private rustup (the crate needs nightly features): nothing touches the user's PATH or profile
+function Use-PrivateRust {
+    # A private rustup (the crates need nightly features): nothing touches the user's PATH or
+    # profile. The GNU host links with its bundled MinGW, so no Visual Studio install is needed.
     $rust = Join-Path $NativeDir 'rust'
     $env:RUSTUP_HOME = Join-Path $rust 'rustup'
     $env:CARGO_HOME  = Join-Path $rust 'cargo'
@@ -66,7 +63,6 @@ function Build-Vcproj2Ninja {
         Write-Host "  installing a private nightly Rust into $rust"
         New-Item -ItemType Directory -Force $rust | Out-Null
         $init = Join-Path $rust 'rustup-init.exe'
-        # the GNU host links with its bundled MinGW, so no Visual Studio install is needed
         Invoke-Exe curl.exe @('-fsSL', '--retry', '3', '-o', $init, 'https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-gnu/rustup-init.exe')
         Invoke-Exe $init @('-y', '--no-modify-path', '--profile', 'minimal', '--default-host', 'x86_64-pc-windows-gnu', '--default-toolchain', $RustToolchain)
     }
@@ -77,12 +73,84 @@ function Build-Vcproj2Ninja {
     $sysroot = (& (Join-Path $env:CARGO_HOME 'bin\rustc.exe') "+$RustToolchain" --print sysroot | Out-String).Trim()
     $dlltool = Join-Path $rust 'llvm-dlltool.exe'
     Copy-Item "$sysroot\lib\rustlib\x86_64-pc-windows-gnu\bin\llvm-ar.exe" $dlltool -Force
-    $env:CARGO_ENCODED_RUSTFLAGS = "-Cdlltool=$dlltool"
+    @{ Rust = $rust; Cargo = $cargo; Dlltool = $dlltool }
+}
+
+function Build-Vcproj2Ninja {
+    $pin = Get-LockedRev 'vcproj2ninja-src'
+    if ($Vcproj2NinjaExe) {
+        New-Item -ItemType Directory -Force (Split-Path $Vcproj2Ninja) | Out-Null
+        Copy-Item $Vcproj2NinjaExe $Vcproj2Ninja -Force
+        Set-Content (Join-Path $Vcproj2NinjaDir 'rev') $pin.Rev
+        return "vcproj2ninja: copied $Vcproj2NinjaExe (assumed built at $($pin.Rev))"
+    }
+    $r = Use-PrivateRust
+    $env:CARGO_ENCODED_RUSTFLAGS = "-Cdlltool=$($r.Dlltool)"
     Write-Host "  building vcproj2ninja $($pin.Rev)"
-    Invoke-Exe $cargo @("+$RustToolchain", 'install', '--git', $pin.Url, '--rev', $pin.Rev, '--locked', '--force', '--root', $Vcproj2NinjaDir, 'vcproj2ninja')
+    Invoke-Exe $r.Cargo @("+$RustToolchain", 'install', '--git', $pin.Url, '--rev', $pin.Rev, '--locked', '--force', '--root', $Vcproj2NinjaDir, 'vcproj2ninja')
+    Remove-Item Env:\CARGO_ENCODED_RUSTFLAGS
     Remove-Item -Recurse -Force $env:CARGO_TARGET_DIR -ErrorAction SilentlyContinue   # ~1 GiB of build cache
     Set-Content (Join-Path $Vcproj2NinjaDir 'rev') $pin.Rev
     "vcproj2ninja: built at $($pin.Rev)"
+}
+
+function Install-ScoringTools {
+    # The vostok build scoring tools (vostok-pdb, both delinkers, objdiff-cli), built natively at
+    # the revs flake.lock pins, for scripts\windows\score.ps1.
+    #
+    # They are built for x86_64-pc-windows-gnullvm and linked by llvm-mingw's clang: built for the
+    # GNU target with the llvm-ar dlltool above they link but crash at startup (bad import
+    # stubs), and vostok-pdb's bundled SQLite needs a C compiler, which llvm-mingw also supplies.
+    # Cargo build scripts still run on the GNU host, which keeps the dlltool flag; objdiff's also
+    # look for dlltool.exe on PATH, so a shim directory holding only that is put first (all of
+    # llvm-mingw\bin on PATH would make them link with its gcc wrapper, which fails).
+    $lm = Join-Path $LlvmMingw 'bin\x86_64-w64-mingw32-clang.exe'
+    if (-not (Test-Path $lm)) {
+        Write-Host "  downloading llvm-mingw $LlvmMingwRelease"
+        New-Item -ItemType Directory -Force $downloads | Out-Null
+        $zip = Join-Path $downloads "llvm-mingw-$LlvmMingwRelease-ucrt-x86_64.zip"
+        if (-not (Test-Path $zip) -or (Get-FileHash $zip -Algorithm SHA256).Hash -ne $LlvmMingwSha256) {
+            Invoke-Exe curl.exe @('-fsSL', '--retry', '3', '-o', $zip, "https://github.com/mstorsjo/llvm-mingw/releases/download/$LlvmMingwRelease/llvm-mingw-$LlvmMingwRelease-ucrt-x86_64.zip")
+        }
+        if ((Get-FileHash $zip -Algorithm SHA256).Hash -ne $LlvmMingwSha256) { throw "$zip sha256 does not match the pinned $LlvmMingwSha256" }
+        Expand-Pinned $zip $LlvmMingw 1
+    }
+    $r = Use-PrivateRust
+    Invoke-Exe (Join-Path $env:CARGO_HOME 'bin\rustup.exe') @('target', 'add', 'x86_64-pc-windows-gnullvm', '--toolchain', $RustToolchain)
+    $shim = Join-Path $r.Rust 'dlltool-shim'
+    New-Item -ItemType Directory -Force $shim | Out-Null
+    Copy-Item $r.Dlltool (Join-Path $shim 'dlltool.exe') -Force
+    $savedPath = $env:PATH
+    $env:PATH = "$shim;$env:PATH"
+    $env:CARGO_TARGET_X86_64_PC_WINDOWS_GNU_RUSTFLAGS = "-Cdlltool=$($r.Dlltool)"
+    $env:CARGO_TARGET_X86_64_PC_WINDOWS_GNULLVM_LINKER = $lm
+    $env:CC_x86_64_pc_windows_gnullvm = $lm
+    $env:AR_x86_64_pc_windows_gnullvm = Join-Path $LlvmMingw 'bin\llvm-ar.exe'
+    $target = @('--target', 'x86_64-pc-windows-gnullvm', '--locked', '--force')
+    $roots = Join-Path $r.Rust 'tools'
+    $jobs = @(
+        @{ Name = 'vostok-pdb'; Args = @('install', '--path', (Join-Path $RepoRoot 'tools\vostok-pdb')) },
+        @{ Name = 'vostok-delinker'; Pin = 'vostok-delinker-src'; Exe = 'vostok-delinker' },
+        @{ Name = 'vostok-data-delinker'; Pin = 'vostok-data-delinker-src'; Exe = 'vostok-delinker' },
+        @{ Name = 'objdiff-cli'; Pin = 'objdiff-src'; Exe = 'objdiff-cli'; Package = 'objdiff-cli' })
+    New-Item -ItemType Directory -Force $ScoringBin | Out-Null
+    $stamp = @()
+    foreach ($j in $jobs) {
+        $root = Join-Path $roots $j.Name
+        if ($j.Pin) {
+            $pin = Get-LockedRev $j.Pin
+            $a = @('install', '--git', $pin.Url, '--rev', $pin.Rev) + $(if ($j.Package) { @($j.Package) } else { @() })
+            $stamp += "$($j.Name) $($pin.Rev)"
+        } else { $a = $j.Args; $stamp += "$($j.Name) (repo)" }
+        Write-Host "  building $($j.Name)"
+        Invoke-Exe $r.Cargo (@("+$RustToolchain") + $a + $target + @('--root', $root))
+        $built = Join-Path $root ("bin\" + $(if ($j.Exe) { $j.Exe } else { $j.Name }) + '.exe')
+        Copy-Item $built (Join-Path $ScoringBin "$($j.Name).exe") -Force
+    }
+    Set-Content (Join-Path $ScoringBin 'revs') $stamp
+    $env:PATH = $savedPath
+    Remove-Item -Recurse -Force $env:CARGO_TARGET_DIR, $roots -ErrorAction SilentlyContinue
+    "scoring tools: built into $ScoringBin"
 }
 
 if ($Native) {
@@ -155,6 +223,11 @@ if ($item) { "junction: $BuildRoot -> $RepoRoot" } else {
     "junction: created $BuildRoot -> $RepoRoot"
 }
 & git -C $RepoRoot config core.autocrlf false
+
+# optional: the native scoring preview tools (score.ps1)
+if ($Scoring) {
+    if ((Test-Path (Join-Path $ScoringBin 'revs')) -and -not $Force) { "scoring tools: present in $ScoringBin" } else { Install-ScoringTools }
+}
 
 if ($Native) {
     Update-NinjaGraph | Out-Null
