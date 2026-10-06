@@ -251,7 +251,7 @@ void stage_pre_rain::execute( )
 		backend::ref( ).set_ps_constant( m_eye_ray_corner_parameter, context->get_eye_rays( )[0].x );
 		backend::ref( ).set_ps_constant( m_view_to_shadow_parameter, math::transpose( view_to_shadow ) );
 		backend::ref( ).set_ps_constant( m_rain_offset_parameter, m_rain_offset );
-		backend::ref( ).set_ps_constant( m_rain_density_parameter, context->get_scene_view( )->post_process_parameters( ).environment_rain_density );
+		backend::ref( ).set_ps_constant( m_rain_density_parameter, context->get_scene_view( )->post_process_parameters( ).environment_rain_wet_intensity );
 		system_renderer::ref( ).fill_surface( context->get_rt( rt_normal ), render_target_ptr( ), render_target_ptr( ), render_target_ptr( ),
 			render_target_ptr( ), true, 0, 0.0f, 0.0f, 1.0f, 1.0f );
 	}

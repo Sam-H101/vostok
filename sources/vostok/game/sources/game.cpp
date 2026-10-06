@@ -412,7 +412,7 @@ void game::on_base_resources_created( resources::queries_result& data )
 	if ( m_is_active )
 	{
 		m_is_active = false;
-		on_application_deactivate( );
+		on_application_activate( );
 	}
 
 	fixed_string< 512 > client_str;
@@ -588,10 +588,10 @@ void game::load_config_query( pcstr cfg_name, bool create_renderer )
 
 void game::register_console_commands( )
 {
-	static console_commands::cc_delegate	game_exit_cc( "quit", boost::bind( &game::exit, this, _1 ), false );
-	static console_commands::cc_delegate	cfg_load_cc( "cfg_load", boost::bind( &game::load_config_query, this, _1, false ), true );
-	static console_commands::cc_delegate	cfg_load_level( "level_load", boost::bind( &game::load_cmd, this, _1 ), true );
-	static console_commands::cc_delegate	cfg_unload_level( "level_unload", boost::bind( &game::unload_cmd, this, _1 ), false );
+	static console_commands::cc_delegate	game_exit_cc( "quit", boost::bind( &game::exit, this, _1 ), false, console_commands::command_type_engine_internal );
+	static console_commands::cc_delegate	cfg_load_cc( "cfg_load", boost::bind( &game::load_config_query, this, _1, false ), true, console_commands::command_type_engine_internal );
+	static console_commands::cc_delegate	cfg_load_level( "level_load", boost::bind( &game::load_cmd, this, _1 ), true, console_commands::command_type_engine_internal );
+	static console_commands::cc_delegate	cfg_unload_level( "level_unload", boost::bind( &game::unload_cmd, this, _1 ), false, console_commands::command_type_engine_internal );
 }
 
 void game::switch_to_scene( base_game_scene* scene )
@@ -1005,7 +1005,7 @@ void scaleform_movie_cook::on_raw_data_loaded( resources::queries_result& data, 
 
 	flash_movie_resource* const resource	= VOSTOK_NEW_IMPL( ::survarium::g_allocator, flash_movie_resource );
 
-	resource->movie					= m_factory.build_movie( (void*)pinned.c_ptr( ), pinned.size( ), parent->reusable_request_name( ).c_str( ) );
+	resource->movie					= m_factory.build_movie( (void*)pinned.c_ptr( ), pinned.size( ), raw_data->reusable_request_name( ).c_str( ) );
 
 	parent->set_unmanaged_resource	( resource, resources::nocache_memory, 0x110 );
 	parent->finish_query			( result_success );

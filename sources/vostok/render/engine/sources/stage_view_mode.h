@@ -39,31 +39,31 @@ public:
 		return false;
 	}
 
-	void execute( scene_view_mode )
-	{
-		// STATE[STUB]
-		// claude@NOTE: the available body depends on retired terrain and model-selection interfaces.
-	}
+	// execute and the batch callbacks: declared only, retail never defines or
+	// calls them (the renderer constructs this stage but never executes it)
+	void execute(
+		scene_view_mode
+	);
 
-	void pre_lpv_batch_render( geometry_batch const& )
-	{
-		// STATE[STUB]
-	}
+	void pre_lpv_batch_render(
+		geometry_batch const&
+	);
 
-	void post_lpv_batch_render( geometry_batch const& )
-	{
-		// STATE[STUB]
-	}
+	void post_lpv_batch_render(
+		geometry_batch const&
+	);
 
-	void pre_shadow_batch_render( geometry_batch const& )
-	{
-		// STATE[STUB]
-	}
+	void pre_shadow_batch_render(
+		geometry_batch const&
+	);
 
-	void post_shadow_batch_render( geometry_batch const& )
-	{
-		// STATE[STUB]
-	}
+	void post_shadow_batch_render(
+		geometry_batch const&
+	);
+
+
+
+
 
 private:
 	bool is_effects_ready( ) const

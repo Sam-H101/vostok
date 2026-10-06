@@ -157,14 +157,14 @@ void stage_particles::execute( )
 	D3D11_VIEWPORT tmp_viewport;
 	tmp_viewport.TopLeftX = 0.0f;
 	tmp_viewport.TopLeftY = 0.0f;
-	tmp_viewport.Width = float( m_context->get_rt( rt_particle_result )->width( ) );
-	tmp_viewport.Height = float( m_context->get_rt( rt_particle_result )->height( ) );
+	tmp_viewport.Width = float( m_context->get_rt( rt_generic_0 )->width( ) );
+	tmp_viewport.Height = float( m_context->get_rt( rt_generic_0 )->height( ) );
 	tmp_viewport.MinDepth = 0.0f;
 	tmp_viewport.MaxDepth = clear_value;
 	backend::ref( ).set_viewport( tmp_viewport );
 
 	backend::ref( ).set_render_targets(
-		&*m_context->get_rt( rt_particle_result ),
+		&*m_context->get_rt( rt_generic_0 ),
 		0,
 		0,
 		0
@@ -192,10 +192,10 @@ void stage_particles::execute( )
 
 		if (
 			particle_render_mode == particle::normal_particle_render_mode &&
-			instance->get_material_effects( ).stage_enable[particles_render_stage]
+			instance->get_material_effects( ).stage_enable[forward_render_stage]
 		)
 		{
-			instance->get_material_effects( ).m_effects[particles_render_stage]->apply( 0, 0 );
+			instance->get_material_effects( ).m_effects[forward_render_stage]->apply( 0, 0 );
 
 			particle_shader_constants::ref( ).set(
 				m_context->get_v_inverted( ).transform_direction( float3( 0, 1000, 0 ) ).normalize( ),

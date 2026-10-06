@@ -77,7 +77,7 @@ void stage_decals_accumulate::execute( )
 	struct sort_by_priority_predicate {
 		bool operator()( decal_instance const* const a, decal_instance const* const b )
 		{
-			return a->get_properties( ).draw_priority > b->get_properties( ).draw_priority;
+			return a->get_properties( ).draw_priority < b->get_properties( ).draw_priority;
 		}
 	};
 
@@ -96,12 +96,12 @@ void stage_decals_accumulate::execute( )
 		0
 	);
 
-	backend::ref( ).reset_depth_stencil_target( );
+	backend::ref( ).set_depth_stencil_target( 0 );
 	math::color const clear_color( 0.0f, 0.0f, 0.0f, 0.0f );
 
 	backend::ref( ).clear_render_targets(
 		clear_color,
-		math::color( 0.5f, 0.5f, 0.0f, 0.0f ),
+		math::color( 0.5f, 0.5f, 0.5f, 0.0f ),
 		clear_color,
 		clear_color
 	);

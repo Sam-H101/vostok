@@ -9,6 +9,7 @@
 #include <vostok/physics/world.h>
 #include <vostok/physics/ray_result.h>
 #include <vostok/physics/base_physics_object.h>
+#include <vostok/physics/rigid_body_base.h>
 #include <vostok/game_core/game_material_manager.h>
 #include <vostok/game_core/material_pair.h>
 #include <vostok/sound/world.h>
@@ -45,23 +46,17 @@ void step_manager::on_step(
 	if ( !ray_result.object )
 		return;
 
-	base_network_client* const network_client	= world.get_game( ).get_network_client( );
-
-	input_mode_type_enum input_mode;
-	if ( network_client &&
-		 network_client->get_current_player( ).c_ptr( ) &&
-		 network_client->get_current_player( )->id == a.id )
-		input_mode						= world.get_current_input_mode( );
-	else
-		input_mode						= third_person_mode;
+	input_mode_type_enum const input_mode	= world.get_game( ).get_network_client( )->is_player_current( a.id )
+											? world.get_current_input_mode( )
+											: third_person_mode;
 
 	u8 const foot_material_id			= ( input_mode == first_person_mode )
 											? a.foot_1st_view_game_material_id
 											: a.foot_3rd_view_game_material_id;
 
-	u16 const triangle_material_id		= ray_result.object->get_collision_group( );
+	u16 const triangle_material_id		= static_cast< physics::bt_rigid_body_base* >( ray_result.object )->get_triangle_material( ray_result.triangle_index, ray_result.is_shape_index );
 
-	material_pair const* const pair		= world.get_game_material_manager( ).get_pair( triangle_material_id, foot_material_id );
+	material_pair const* const pair		= world.get_game_material_manager( ).get_pair( foot_material_id, triangle_material_id );
 
 	sound::sound_emitter_ptr sound		= static_cast_resource_ptr< sound::sound_emitter_ptr >( pair->sound( ) );
 
@@ -69,7 +64,10 @@ void step_manager::on_step(
 		sound->emit_and_play_once(
 			world.get_sound_scene( ),
 			world.get_game( ).get_sound_world( ).get_logic_world_user( ),
-			ray_result.hit_point_world
+			ray_result.hit_point_world,
+			0,
+			0,
+			input_mode == first_person_mode
 		);
 
 	if ( pair->decal1( ).c_ptr( ) )
@@ -91,8 +89,8 @@ void step_manager::on_step(
 		world.play_particle(
 			pair->particle( ),
 			ray_result.hit_point_world,
-			float3( 0.f, 0.f, 0.f ),
-			float3( 0.f, 0.f, 0.f )
+			float3( 1.f, 0.f, 0.f ),
+			float3( 0.f, 1.f, 0.f )
 		);
 }
 

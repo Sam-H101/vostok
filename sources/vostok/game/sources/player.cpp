@@ -181,7 +181,7 @@ void player::insert_alive( )
 
 	m_target.physics_controller->activate( m_target.transform );
 	if ( m_use_physics_controller_for_current )
-		m_current.physics_controller->activate( m_current.transform );
+		m_current.physics_controller->activate( m_target.transform );
 
 	damage_model( )->reset( );
 	m_stamina.reset( );
@@ -265,7 +265,7 @@ void player::remove( )
 		hide( );
 
 	m_current_active_object->deactivate( );
-	on_before_active_object_changed( interactive_object_ptr( ), m_current_active_object );
+	on_before_active_object_changed( m_current_active_object, interactive_object_ptr( ) );
 	m_current_active_object = interactive_object_ptr( );
 	m_target_active_object = interactive_object_ptr( );
 
@@ -403,8 +403,8 @@ void player::render( const u32 __formal, const u32 current_time_in_ms )
 			{
 				render::trample_desc trample;
 				trample.position = m_current.transform.c.xyz( );
-				trample.radius = 0.f;
-				trample.multiplier = 0.5f;
+				trample.radius = 0.5f;
+				trample.multiplier = 1.f;
 				m_game_scene.scene_renderer( ).add_vegetation_trample( scene, trample );
 			}
 		}

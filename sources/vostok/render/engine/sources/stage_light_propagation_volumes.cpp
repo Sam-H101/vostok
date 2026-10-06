@@ -337,13 +337,13 @@ void stage_light_propagation_volumes::render_to_rms(
 			if ( instance.m_render_surface->get_vertex_input_type( ) != static_mesh_vertex_input_type )
 				continue;
 
-			if ( !me.m_effects[light_propagation_volumes_render_stage] )
+			if ( !me.m_effects[gbuffer_render_stage] )
 				continue;
 
 			if ( !geometry.lpv_pass_geom )
 				continue;
 
-			me.m_effects[light_propagation_volumes_render_stage]->apply( 4, 0 );
+			me.m_effects[gbuffer_render_stage]->apply( 4, 0 );
 			backend::ref( ).set_ps_constant( m_c_light_color, light_color );
 			backend::ref( ).set_ps_constant( m_c_light_intensity, light_intensity );
 			m_context->set_w( *instance.m_transform );
@@ -408,9 +408,9 @@ void stage_light_propagation_volumes::render_to_rms_smoothed2(
 
 	if ( render_stage_index == 0 )
 	{
-		device::ref( ).d3d_context( )->CopyResource( m_radiance_volume[cascade_index].m_t_rms_albedo_source_temp->hw_texture( ), m_radiance_volume[cascade_index].m_t_rms_albedo_source->hw_texture( ) );
-		device::ref( ).d3d_context( )->CopyResource( m_radiance_volume[cascade_index].m_t_rms_normal_source_temp->hw_texture( ), m_radiance_volume[cascade_index].m_t_rms_normal_source->hw_texture( ) );
-		device::ref( ).d3d_context( )->CopyResource( m_radiance_volume[cascade_index].m_t_rms_position_source_temp->hw_texture( ), m_radiance_volume[cascade_index].m_t_rms_position_source->hw_texture( ) );
+		device::ref( ).d3d_context( )->CopyResource( m_radiance_volume[cascade_index].m_t_rms_albedo_source->hw_texture( ), m_radiance_volume[cascade_index].m_t_rms_albedo_source_temp->hw_texture( ) );
+		device::ref( ).d3d_context( )->CopyResource( m_radiance_volume[cascade_index].m_t_rms_normal_source->hw_texture( ), m_radiance_volume[cascade_index].m_t_rms_normal_source_temp->hw_texture( ) );
+		device::ref( ).d3d_context( )->CopyResource( m_radiance_volume[cascade_index].m_t_rms_position_source->hw_texture( ), m_radiance_volume[cascade_index].m_t_rms_position_source_temp->hw_texture( ) );
 
 		backend::ref( ).set_render_targets( &*m_radiance_volume[cascade_index].m_rt_rms_albedo_source_temp, &*m_radiance_volume[cascade_index].m_rt_rms_normal_source_temp, &*m_radiance_volume[cascade_index].m_rt_rms_position_source_temp, 0 );
 		backend::ref( ).clear_render_targets( 0.0f, 0.0f, 0.0f, 0.0f );
@@ -483,14 +483,14 @@ void stage_light_propagation_volumes::render_to_rms_smoothed2(
 		render_geometry& geometry = instance.m_render_surface->m_render_geometry;
 		if ( instance.m_render_surface->get_vertex_input_type( ) != static_mesh_vertex_input_type )
 			continue;
-		if ( !me.m_effects[light_propagation_volumes_render_stage] )
+		if ( !me.m_effects[gbuffer_render_stage] )
 			continue;
 		if ( !geometry.lpv_pass_geom && !geometry.geom )
 			continue;
 		if ( geometry.lpv_pass_geom )
-			me.m_effects[light_propagation_volumes_render_stage]->apply( 2, 0 );
+			me.m_effects[gbuffer_render_stage]->apply( 2, 0 );
 		else
-			me.m_effects[light_propagation_volumes_render_stage]->apply( 4, 0 );
+			me.m_effects[gbuffer_render_stage]->apply( 4, 0 );
 
 		backend::ref( ).set_ps_constant( m_c_light_color, light_color );
 
@@ -847,10 +847,10 @@ void stage_light_propagation_volumes::execute_smoothed_impl(
 		tmp_viewport.MinDepth = 0.0f;
 		tmp_viewport.MaxDepth = 1.0f;
 
-		for ( s32 cascade_index = m_num_cascades - 1; cascade_index >= 0; --cascade_index )
+		for ( u32 pass_index = 0; pass_index < 1; ++pass_index )
 		{
 
-			for ( u32 pass_index = 0; pass_index < 2; ++pass_index )
+			for ( s32 cascade_index = m_num_cascades - 1; cascade_index >= 0; --cascade_index )
 			{
 				if ( pass_index == 1 )
 				{
@@ -1144,7 +1144,7 @@ void stage_light_propagation_volumes::execute_impl( )
 
 void stage_light_propagation_volumes::execute_disabled( )
 {
-	backend::ref( ).set_render_targets( &*m_context->get_rt( rt_accumulator_diffuse ), 0, 0, 0 );
+	backend::ref( ).set_render_targets( &*m_context->get_rt( rt_lpv_accumulation ), 0, 0, 0 );
 	backend::ref( ).clear_render_targets( 0.0f, 0.0f, 0.0f, 0.0f );
 }
 

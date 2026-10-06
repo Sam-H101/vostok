@@ -369,10 +369,10 @@ void player::tick( const u32 current_time_in_ms )
 		m_current.animation_player.set_object_transform( m_current.transform, this );
 		m_target.animation_player.set_object_transform( m_target.transform, this );
 
-		are_there_any_callbacks = m_target.animation_player.tick_to_nearest_user_handled_callback( current_time_in_ms );
+		are_there_any_callbacks = m_current.animation_player.tick_to_nearest_user_handled_callback( current_time_in_ms );
+		// a callback (e.g. a shot) splits the frame: each sub-step integrates only its own span
+		const float time_delta = ( m_current.animation_player.last_tick_time_in_ms( ) - time_in_ms ) * 0.001f;
 		time_in_ms = m_current.animation_player.last_tick_time_in_ms( );
-
-		const float time_delta = ( time_in_ms - previous_time_in_ms ) * 0.001f;
 		apply_input_before_new_transform( m_current, previous_input, time_delta );
 		m_target.animation_player.tick( time_in_ms );
 		apply_input_before_new_transform( m_target, previous_input, time_delta );
@@ -386,7 +386,7 @@ void player::tick( const u32 current_time_in_ms )
 	if( are_there_any_callbacks )
 		select_animations( current_time_in_ms );
 
-	if( ( is_local && m_is_alive ) || !m_history.empty( ) )
+	if( ( is_local && m_is_alive ) || m_history.empty( ) )
 		serialize_current_state( current_time_in_ms );
 
 	if( is_local && m_is_alive )

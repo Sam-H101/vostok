@@ -442,7 +442,7 @@ void damage_zone_core::hit_on_motion_inside( const u32 frame_delta, const u32 cu
 				float on_bound_hit = m_motion_on_bound_curve.evaluate( it->m_receiver->get_speed( ), 0.0f, math::range_time_type, 0.0f, 0.0f );
 				float on_center_hit = m_motion_on_center_curve.evaluate( it->m_receiver->get_speed( ), 0.0f, math::range_time_type, 0.0f, 0.0f );
 				float const hit_val = math::lerp( m_min_hit, m_max_hit, ( on_bound_hit + on_center_hit ) / 2.0f );
-				it->m_receiver->hit( this, *ub_it->first, m_damage_type.c_str( ), hit_val, m_min_armor_piercing, NULL );
+				it->m_receiver->hit( this, *ub_it->first, m_damage_type.c_str( ), hit_val, m_max_armor_piercing, NULL );
 				it->m_was_hit = true;
 			}
 		}

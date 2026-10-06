@@ -733,6 +733,8 @@ static DXGI_FORMAT find_srgb_format( DXGI_FORMAT format, bool )
 			return DXGI_FORMAT_BC2_UNORM_SRGB;
 		case DXGI_FORMAT_BC3_UNORM:
 			return DXGI_FORMAT_BC3_UNORM_SRGB;
+		default:
+			return format;
 	}
 }
 
@@ -755,10 +757,14 @@ void resource_manager::on_texture_loaded(
 	resources::managed_resource_ptr managed_ptr = data;
 	resources::pinned_ptr_const< texture_data_resource > managed_typed_ptr( managed_ptr );
 
-	pcbyte const dds_ptr = static_cast< pcbyte >( managed_typed_ptr->buffer( ).c_ptr( ) );
-	u32 dds_size = managed_typed_ptr->buffer( ).size( );
-	bool is_srgb_option = !s_no_srgb_textures_result && read_srgb_flag( dds_ptr, dds_size );
-	--dds_size;
+	texture_data_resource const* resource = managed_typed_ptr.c_ptr( );
+
+	pcbyte const dds_ptr = static_cast< pcbyte >( resource->buffer( ).c_ptr( ) );
+	u32 dds_size = resource->buffer( ).size( );
+
+	bool const is_srgb_option = s_no_srgb_textures_result ? false : read_srgb_flag( dds_ptr, dds_size );
+
+	dds_size -= sizeof( is_srgb_option );
 
 	D3DX_IMAGE_INFO dds_info = { 0 };
 	if ( FAILED( D3DXGetImageInfoFromMemory( dds_ptr, dds_size, NULL, &dds_info, NULL ) ) )
@@ -786,13 +792,16 @@ void resource_manager::on_texture_loaded(
 	u32 texture_quality = options::ref( ).current.m_texture_quality;
 	u32 const min_dimension = math::min( dds_info.Width, dds_info.Height );
 	u32 const video_memory = device::ref( ).get_avaliable_video_memory( );
+	u32 mip_level_cut = 0;
 	bool const weapon_or_flora = strstr( name.c_str( ), "weapons/" ) != NULL ||
 		strstr( name.c_str( ), "flora/" ) != NULL;
 
 	if ( s_debug_clip_texture_quality && !device::ref( ).get_is_editor( ) )
 	{
 		if ( texture_quality == 1 )
+		{
 			texture_quality = weapon_or_flora ? 1 : 0;
+		}
 		else if ( texture_quality == 2 )
 		{
 			if ( video_memory <= 512 )
@@ -802,14 +811,14 @@ void resource_manager::on_texture_loaded(
 		}
 	}
 
-	u32 mip_level_cut = 0;
-	if ( min_dimension > 128 )
-		mip_level_cut = 2 - texture_quality;
+	bool const can_cut_mips = dds_info.Depth == 1 && texture_quality < 2;
+
+	if ( can_cut_mips && min_dimension > 128 )
+		mip_level_cut = 2 - math::max< u32 >( texture_quality, 0 );
 
 	if ( dds_info.ArraySize == 1 &&
 		 dds_info.MipLevels > mip_level_cut &&
-		 dds_info.Depth == 1 &&
-		 texture_quality < 2 )
+		 can_cut_mips )
 	{
 		for ( u32 mip_index = 0; mip_index < mip_level_cut; ++mip_index )
 		{
@@ -851,6 +860,7 @@ void resource_manager::on_texture_loaded(
 		D3D11_TEXTURE2D_DESC desc;
 		ZeroMemory( &desc, sizeof(desc) );
 		desc.ArraySize = dds_info.ArraySize;
+		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 		desc.Format = is_srgb_option ? find_srgb_format( dds_info.Format, true ) : dds_info.Format;
 		desc.Width = dds_info.Width;
 		desc.Height = dds_info.Height;
@@ -859,7 +869,6 @@ void resource_manager::on_texture_loaded(
 		desc.SampleDesc.Count = 1;
 		desc.SampleDesc.Quality = 0;
 		desc.CPUAccessFlags = 0;
-		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 		desc.Usage = D3D11_USAGE_DEFAULT;
 
 		if ( dds_info.ArraySize == 1 )
@@ -945,9 +954,9 @@ void resource_manager::on_texture_loaded(
 	else
 	{
 		D3D11_TEXTURE3D_DESC desc;
-		desc.Format = is_srgb_option ? find_srgb_format( dds_info.Format, true ) : dds_info.Format;
 		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 		desc.CPUAccessFlags = 0;
+		desc.Format = is_srgb_option ? find_srgb_format( dds_info.Format, true ) : dds_info.Format;
 		desc.Width = dds_info.Width;
 		desc.Height = dds_info.Height;
 		desc.Depth = dds_info.Depth;

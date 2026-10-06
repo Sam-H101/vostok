@@ -26,6 +26,7 @@ inline binary_tree_animation_node::binary_tree_animation_node			( binary_tree_an
 
 	m_n_ary_animation					( other.m_n_ary_animation ),
 	m_next_weight_animation				( other.m_next_weight_animation ),
+	m_unique_weights_count				( other.m_unique_weights_count ),
 	user_data							( other.user_data ),
 
 	m_animation_intervals_count			( other.m_animation_intervals_count ),
@@ -41,7 +42,8 @@ inline binary_tree_animation_node::binary_tree_animation_node			( binary_tree_an
 	m_unique_animation_id				( other.m_unique_animation_id ),
 	m_override_existing_animation		( other.m_override_existing_animation ),
 	m_is_positive_event_direction		( other.m_is_positive_event_direction ),
-	m_can_generate_user_defined_events	( other.m_can_generate_user_defined_events )
+	m_can_generate_user_defined_events	( other.m_can_generate_user_defined_events ),
+	m_null_weight_found					( other.m_null_weight_found )
 {
 #ifndef MASTER_GOLD
 	user_data							= other.user_data;

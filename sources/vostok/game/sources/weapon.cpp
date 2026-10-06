@@ -89,7 +89,7 @@ u32 light_ids = 1000000;
 	m_weapon_fire_light_props.local_light_z_bias		= 0.0f;
 	m_weapon_fire_light_props.shadow_transparency		= 0.0f;
 	m_weapon_fire_light_props.range						= 5.0f;
-	m_weapon_fire_light_props.sun_shadow_map_size		= 0;
+	m_weapon_fire_light_props.sun_shadow_map_size		= 1;
 	m_weapon_fire_light_props.shadow_map_size_index		= 0;
 	m_weapon_fire_light_props.num_sun_cascades			= 0;
 	m_weapon_fire_light_props.shadow_distribution_sides[ 0 ]	= false;
@@ -225,6 +225,8 @@ std::pair< animation::mixing::expression, animation::mixing::animation_lexeme > 
 			0,
 			0
 		)
+		.weight_synchronization_group_id	( 0 )
+		.playback_type			( animation::mixing::play_once_and_freeze_at_end )
 		.time_calculator		( &freeze_at_end_time_calculator )
 		.time_scale			( 0.5f )
 		.animated_object		( m_user )
@@ -285,9 +287,9 @@ float4x4 weapon::calculate_locator(
 	static float4x4 add = math::create_rotation_y( math::pi );
 
 	if ( locator.m_bone == 0xffff )
-		return math::mul4x3( math::mul4x3( locator.m_offset, add ), weapon_core::m_transform );
+		return math::mul4x3( math::mul4x3( add, locator.m_offset ), weapon_core::m_transform );
 
-	return math::mul4x3( math::mul4x3( matrices[ locator.m_bone ], weapon_core::m_transform ), math::mul4x3( locator.m_offset, add ) );
+	return math::mul4x3( math::mul4x3( math::mul4x3( add, locator.m_offset ), matrices[ locator.m_bone ] ), weapon_core::m_transform );
 }
 
 void weapon::on_show( )
@@ -548,9 +550,9 @@ void weapon::activate( base_player& user, engine& engine )
 	m_right_toe_bone_index = user.skeleton( ).get_bone_index( "RightFoot" ) - user.skeleton( ).get_root_bones_count( );
 
 	set_animation_callback( "sound_events", get_user( ), boost::bind( &weapon::on_foot_step, this, _1 ) );
-	set_animation_callback( "shell_extraction", get_user( ), boost::bind( &weapon::on_shell_extraction_event, this, _1 ) );
-	set_animation_callback( "left_hand_corrector", get_user( ), boost::bind( &weapon::on_hand_correction_event, this, _1, fingers_to_weapon_corrector::left ) );
-	set_animation_callback( "right_hand_corrector", get_user( ), boost::bind( &weapon::on_hand_correction_event, this, _1, fingers_to_weapon_corrector::right ) );
+	set_animation_callback( "shell_extraction", this, boost::bind( &weapon::on_shell_extraction_event, this, _1 ) );
+	set_animation_callback( "left_hand_corrector", this, boost::bind( &weapon::on_hand_correction_event, this, _1, fingers_to_weapon_corrector::left ) );
+	set_animation_callback( "right_hand_corrector", this, boost::bind( &weapon::on_hand_correction_event, this, _1, fingers_to_weapon_corrector::right ) );
 
 	m_fingers_corrector.activate_hand( fingers_to_weapon_corrector::left, true, m_game_scene->get_game( ).game_time_ms( ) );
 	m_fingers_corrector.activate_hand( fingers_to_weapon_corrector::right, true, m_game_scene->get_game( ).game_time_ms( ) );
@@ -561,9 +563,9 @@ void weapon::activate( base_player& user, engine& engine )
 void weapon::deactivate( )
 {
 	remove_animation_callback( "sound_events", get_user( ) );
-	remove_animation_callback( "shell_extraction", get_user( ) );
-	remove_animation_callback( "left_hand_corrector", get_user( ) );
-	remove_animation_callback( "right_hand_corrector", get_user( ) );
+	remove_animation_callback( "shell_extraction", this );
+	remove_animation_callback( "left_hand_corrector", this );
+	remove_animation_callback( "right_hand_corrector", this );
 
 	weapon_core::deactivate( );
 }

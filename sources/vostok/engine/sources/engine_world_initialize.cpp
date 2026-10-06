@@ -310,7 +310,7 @@ void engine_world::finalize				( )
 		apc::wait						( apc::build );
 
 	apc::run							( apc::logic,	boost::bind(&engine_world::network_clear_resources, this), apc::continue_process_loop, apc::dont_wait_for_completion );
-	apc::run							( apc::network,	boost::bind(&engine_world::network_tick, this), apc::continue_process_loop, apc::dont_wait_for_completion );
+	apc::run_remote_only				( apc::network,	boost::bind(&engine_world::network_tick, this), apc::continue_process_loop, apc::wait_for_completion );
 	apc::run							( apc::logic,	boost::bind(&engine_world::logic_finalize_modules, this), apc::continue_process_loop, apc::dont_wait_for_completion );
 	apc::run							( apc::logic,	boost::bind(&network::world::finalize, m_network_world ), apc::continue_process_loop, apc::dont_wait_for_completion );
 	apc::run_remote_only				( apc::logic,	boost::bind(&resources::finalize_thread_usage, false), apc::break_process_loop, apc::dont_wait_for_completion );

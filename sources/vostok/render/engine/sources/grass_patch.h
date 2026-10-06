@@ -72,11 +72,11 @@ struct grass_patch : public boost::noncopyable {
 
 	u32 get_valid_lod_index( u32 const lod_index ) const;
 
-	void update_movement_texture( renderer_context* )
-	{
-		// claude@NOTE: no developer body is available.
-		// STATE[STUB]
-	}
+	// declared only: retail never defines or calls it
+	void update_movement_texture(
+		renderer_context*
+	);
+
 
 	void try_accumulate_trample(
 		trample_desc& desc,

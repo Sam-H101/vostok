@@ -107,7 +107,7 @@ void   archive_mounter::mount_archive_impl	(synchronous_device_interface & devic
 	}
 	else
 	{
-		u32 const max_helper_nodes		=	m_args.virtual_path.count_of(virtual_path_string::separator) + 1;
+		u32 const max_helper_nodes		=	m_args.virtual_path.count_of(virtual_path_string::separator) + (m_args.virtual_path.length() > 0 ? 1 : 0) + 1;
 		buffer_vector< mount_helper_node<> * >	helper_nodes(ALLOCA(sizeof(mount_helper_node<> *) * max_helper_nodes), max_helper_nodes);
 		if ( !allocate_mount_branch(& helper_nodes) )
 		{
@@ -185,7 +185,16 @@ void   archive_mounter::mount_fat		(archive_folder_mount_root_node<> *	mount_roo
 	m_mount_root_base->physical_path	=	mount_root->fat_path_holder;
 
 	if ( m_args.submount_type == submount_type_automatic_archive )
+	{
 		mount_root->node->set_name			(m_args.submount_node->get_name());
+	}
+	else if ( m_args.submount_type == submount_type_unset )
+	{
+		pcstr const last_slash			=	strrchr(mount_root->virtual_path_holder, '/');
+		pcstr const name				=	last_slash ? last_slash + 1 : mount_root->virtual_path_holder;
+
+		mount_root->node->set_name			(name);
+	}
 
 	u32	const hash						=	path_crc32(m_args.virtual_path);
 

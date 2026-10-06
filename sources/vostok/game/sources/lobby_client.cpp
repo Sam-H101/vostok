@@ -115,10 +115,11 @@ void lobby_client::on_error(
 
 void lobby_client::connect( server_connection_info const& lobby_connection_info )
 {
+	u32 const connection_error_count = m_connection_info.connection_error_count;
 	m_connection_info	= lobby_connection_info;
+	m_connection_info.connection_error_count = connection_error_count;
 	m_packet_client.connect	( m_connection_info.host, m_connection_info.port );
 }
-
 #line 122
 void lobby_client::disconnect( )
 {
@@ -257,7 +258,7 @@ u8 lobby_client::read_profile_content_info( network_core::packet_reader& reader 
 		if ( m_profiles[ i ].profile_id == profile.profile_id )
 		{
 			m_profiles[ i ]	= profile;
-			m_profiles[ i ].team	= team_undefined;
+			m_profiles[ i ].team	= team_1;
 			return i;
 		}
 	}

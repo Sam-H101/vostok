@@ -87,20 +87,20 @@ struct grass_world : public resources::unmanaged_resource {
 	void process_sorting( float3 const& viewer_position, bool sort_instances );
 	void render_debug( renderer_context* context );
 
-	grass_patch* find_patch( float3 const&, grass_template* )
-	{
-		// claude@NOTE: the developer sources contain only the point overload.
-		// STATE[STUB]
-		return 0;
-	}
+	// declared only: retail never defines or calls it
+	grass_patch* find_patch(
+		float3 const&,
+		grass_template*
+	);
 
 	grass_patch* find_patch( float3 const& point );
 
-	u32 find_patches( grass_template*, vector<grass_patch*>& )
-	{
-		// STATE[STUB]
-		return 0;
-	}
+	// declared only: retail never defines or calls it
+	u32 find_patches(
+		grass_template*,
+		vector<grass_patch*>&
+	);
+
 
 	vector<grass_patch*>& get_visible_patches( )
 	{
@@ -129,11 +129,11 @@ struct grass_world : public resources::unmanaged_resource {
 	void add_trample( trample_desc const& desc );
 
 private:
-	void on_test_sub_resources_loaded( resources::queries_result& )
-	{
-		// claude@NOTE: the available body uses incompatible resource-loading signatures.
-		// STATE[STUB]
-	}
+	// declared only: retail never defines or calls it
+	void on_test_sub_resources_loaded(
+		resources::queries_result&
+	);
+
 
 	void grass_layer_resources_ready(
 		resources::queries_result& data,
@@ -151,11 +151,11 @@ private:
 
 	void remove_layer_instances( u8 id, float2 const& cell_lt, float2 const& cell_rb );
 
-	void create_patch_render_buffers( )
-	{
-		// claude@NOTE: the available body depends on grass_patch::create_render_buffer, which is absent here.
-		// STATE[STUB]
-	}
+	// declared only: retail never defines or calls it
+	void create_patch_render_buffers( );
+
+
+
 
 	void merge_patches( );
 	u32 add_template( grass_render_model_ptr const& render_model );

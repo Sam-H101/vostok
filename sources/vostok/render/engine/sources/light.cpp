@@ -162,6 +162,35 @@ void light::on_properties_changed( )
 	m_aabb.zero					( );
 	m_aabb						+= 1.f;
 
+	// build final rotation / translation
+	float3						L_dir,L_up,L_right;
+
+	// dir
+	L_dir = direction;
+	float const direction_length = L_dir.length();
+	R_ASSERT					( math::is_similar( direction_length, 1.f) );
+
+	// R&N
+	if (right.squared_length()>math::epsilon_5)
+	{
+		// use specified 'up' and 'right', just enshure ortho-normalization
+		L_right = right; L_right.normalize();
+		L_up = math::cross_product(L_dir,L_right); L_up.normalize();
+		L_right = math::cross_product(L_up,L_dir);	L_right.normalize();
+	} else {
+		// auto find 'up' and 'right' vectors
+		L_up.set(0,1,0); if (abs(math::dot_product(L_up, L_dir))>.99f)	L_up.set(0,0,1);
+		L_right=math::cross_product(L_up,L_dir); L_right.normalize();
+		L_up=math::cross_product(L_dir,L_right); L_up.normalize();
+	}
+
+	// matrix
+	float4x4 rotation_X_translation;
+	rotation_X_translation.i.xyz() = L_right;	rotation_X_translation.e03 = 0.f;
+	rotation_X_translation.j.xyz() = L_up;		rotation_X_translation.e13 = 0.f;
+	rotation_X_translation.k.xyz() = L_dir;		rotation_X_translation.e23 = 0.f;
+	rotation_X_translation.c.xyz() = position;	rotation_X_translation.e33 = 1.f;
+
 	switch ( flags.type ) {
 		case light_type_parallel:
 
@@ -189,7 +218,7 @@ void light::on_properties_changed( )
 			);
 			transform			=
 				math::create_scale( box_half_length ) *
-				math::create_rotation( m_xform.get_angles_xyz() ) *
+				math::create_rotation( rotation_X_translation.get_angles_xyz() ) *
 				math::create_translation( position + direction * range/2.f );
 
 			m_collision_object	=

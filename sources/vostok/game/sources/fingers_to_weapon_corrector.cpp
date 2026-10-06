@@ -49,7 +49,8 @@ static u32 s_index_of_parent[16] =
 // ctor shows the opposite: target calls, base inlines). Not source-steerable without
 // __forceinline on the shared interpolator header (off-limits - other units' call sites).
  fingers_to_weapon_corrector::fingers_to_weapon_corrector( ) :
-	m_interpolator( 0.1f )
+	m_interpolator( 0.1f ),
+	m_first_person_view( false )
 {
 }
 
@@ -96,7 +97,7 @@ void fingers_to_weapon_corrector::initialize_locators( render::render_model_inst
 			weapon_model.get_locator		( locator_name.c_str(), current_item );
 
 			matrices[i]						= current_item.m_offset;
-			matrices[i].try_invert			( inverted_matrices[i] );
+			inverted_matrices[i].try_invert	( matrices[i] );
 		}
 
 		for ( u32 i = 0; i < 15; ++i )

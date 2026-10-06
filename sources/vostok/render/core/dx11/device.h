@@ -27,12 +27,12 @@ public:
 
 	D3D_FEATURE_LEVEL get_feature_level( ) const { return m_feature_level; }
 	u32 get_avaliable_video_memory( ) const;
-	u32 get_max_texture_size( ) const
-	{
-		// claude@NOTE: no body is available in the developer sources.
-		// STATE[STUB]
-		return 0;
-	}
+	// declared only: retail never defines or calls it
+	u32 get_max_texture_size( ) const;
+
+
+
+
 	bool get_is_editor( ) const { return m_is_editor; }
 
 private:

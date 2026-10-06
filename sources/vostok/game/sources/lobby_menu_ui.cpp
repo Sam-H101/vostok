@@ -123,12 +123,12 @@ void relocate_item_func::call( flash_function_handler_params& params )
 		{
 			profile_slot_enum const weapon_slot = ( profile_slot_enum )second_item_id;
 			second_item_id = lobby.profile( m_game.lobby_menu( ).selected_profile( ) ).slots[ weapon_slot ].item.dict_id;
-
-			for ( vector< relocate_item_descr >::const_iterator j = descriptions.begin( ); j != descriptions.end( ); ++j )
-			{
-				if ( j->target_slot_id == weapon_slot )
-					second_item_id = j->item_dict_id;
-			}
+			if ( second_item_id )
+				for ( vector< relocate_item_descr >::const_iterator j = descriptions.begin( ); j != descriptions.end( ); ++j )
+				{
+					if ( j->target_slot_id == weapon_slot )
+						second_item_id = j->item_dict_id;
+				}
 		}
 
 		if ( lobby.can_move_item( current_item.item_category, current.target_slot_id ) &&
@@ -420,9 +420,10 @@ void lobby_menu::update_ui( const u32 frame_delta_in_ms, const u32 current_time_
 
 void lobby_menu::update_status( )
 {
-	flash_value b_val;
-
 	fixed_string< 128 > status_str;
+
+	flash_value b_val;
+	b_val.SetBoolean( false );
 	if ( lobby_client( ).status( status_str ) == lobby::surf_lobby_menu )
 		b_val.SetBoolean( true );
 
@@ -676,7 +677,7 @@ void lobby_menu::fill_items_dictionary( )
 		flash_value inventory_item_descr;
 		m_lobby_menu_ui->movie->CreateObject( &inventory_item_descr );
 
-		inventory_item_property.SetUInt( current_item_dict_id );
+		inventory_item_property.SetInt( current_item_dict_id );
 		inventory_item_descr.SetMember( "dictId", inventory_item_property );
 
 		inventory_item_property.SetStringW( item_name );
@@ -688,7 +689,7 @@ void lobby_menu::fill_items_dictionary( )
 		inventory_item_property.SetUInt( current_item_category_id );
 		inventory_item_descr.SetMember( "category", inventory_item_property );
 
-		inventory_item_property.SetUInt( icon );
+		inventory_item_property.SetInt( icon );
 		inventory_item_descr.SetMember( "icon", inventory_item_property );
 
 		float item_weight;
@@ -723,7 +724,7 @@ void lobby_menu::fill_items_dictionary( )
 
 			u32 prop_icon = it->value_exists( "prop_icon" ) ? (*it)["prop_icon"] : 0;
 
-			item_property_member.SetUInt( (*it)["prop_value"] );
+			item_property_member.SetString( (*it)["prop_value"] );
 			item_property.SetMember( "prop_value", item_property_member );
 
 			item_property_member.SetStringW( prop_name );
@@ -1065,7 +1066,7 @@ void lobby_menu::reset_account_money( )
 
 void lobby_menu::on_shop_ui_ready( )
 {
-	for ( u32 trader_id = 1; trader_id <= 3; ++trader_id )
+	for ( u32 trader_id = 1; trader_id <= 4; ++trader_id )
 		lobby_client( ).query_prices( trader_id );
 }
 
@@ -1131,7 +1132,7 @@ void lobby_menu::fill_skills_tree( )
 			skills_tree_level_value_prop.SetStringW( branch_name );
 			skills_tree_level_value.SetMember( "name", skills_tree_level_value_prop );
 
-			skills_tree_level_value_prop.SetBoolean( current_level_cfg.value_exists( "perks" ) );
+			skills_tree_level_value_prop.SetUInt( current_level_cfg.value_exists( "perks" ) );
 			skills_tree_level_value.SetMember( "power", skills_tree_level_value_prop );
 
 			m_lobby_menu_ui->movie->CreateArray( &skills_tree_level_value_prop );

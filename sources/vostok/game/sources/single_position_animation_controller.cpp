@@ -174,7 +174,7 @@ animation::mixing::expression single_position_animation_controller::selected_ani
 		)
 		.weight_interpolator( animation::linear_interpolator( 0.25f ) )
 		.time_scale_interpolator( animation::linear_interpolator( 0.25f ) )
-		.time_scale( time_scale )
+		.time_scale( time_scale ).weight_synchronization_group_id( 0 ).time_synchronization_group_id( 0 )
 	);
 
 	animation::mixing::weight_lexeme left_weight(
@@ -191,7 +191,7 @@ animation::mixing::expression single_position_animation_controller::selected_ani
 			&right_animation,
 			NULL
 		)
-		.time_scale( time_scale )
+		.weight_interpolator( animation::linear_interpolator( 0.25f ) ).weight_synchronization_group_id( 0 ).time_synchronization_group_id( 0 )
 	);
 
 	return animation::mixing::expression( left_animation*( 1.f - left_weight ) + right_animation*left_weight );

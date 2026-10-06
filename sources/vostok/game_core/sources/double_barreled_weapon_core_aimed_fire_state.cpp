@@ -134,7 +134,7 @@ animation::mixing::expression double_barreled_weapon_core_aimed_fire_state::get_
 ) const
 {
 	if ( user_state_id == type_sprint )
-		return animation::mixing::expression( weapon_lexeme );
+		return animation::mixing::expression( );
 
 	u32 const user_animation_index = ( user_state_id == type_crouch );
 
@@ -142,7 +142,7 @@ animation::mixing::expression double_barreled_weapon_core_aimed_fire_state::get_
 		m_user_animations[is_third_view != false][user_animation_index];
 
 	if ( resources::pinned_ptr_const< animation::cubic_spline_skeleton_animation >( selected_animation )->animation_type( ) != animation::animation_type_additive )
-		return animation::mixing::expression( weapon_lexeme );
+		return animation::mixing::expression( );
 
 	pcstr const user_animation_captions[2] = { "aimed_stand_shot", "aimed_crouch_shot" };
 

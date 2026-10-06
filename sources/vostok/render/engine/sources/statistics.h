@@ -130,18 +130,18 @@ struct statistics_cpu_gpu : public statistics_base {
 STATIC_SIZE_ASSERT( statistics_cpu_gpu, 0x248 );
 
 struct cpu_gpu_timer_scope : public boost::noncopyable {
-	explicit cpu_gpu_timer_scope( statistics_cpu_gpu& counter ) :
-		m_counter( counter )
-	{
-		// claude@NOTE: no body compatible with the current timer layout is available.
-		// STATE[STUB]
-	}
+	// declared only: retail ships with USE_RENDER_STATISTICS off, so the timer
+	// scopes are never constructed and have no bodies
+	explicit cpu_gpu_timer_scope(
+		statistics_cpu_gpu& counter
+	);
 
-	~cpu_gpu_timer_scope( )
-	{
-		// claude@NOTE: no body compatible with the current timer layout is available.
-		// STATE[STUB]
-	}
+	~cpu_gpu_timer_scope( );
+
+
+
+
+
 
 	statistics_cpu_gpu&	m_counter;
 	timing::timer		m_cpu_tumer;
@@ -150,18 +150,18 @@ struct cpu_gpu_timer_scope : public boost::noncopyable {
 STATIC_SIZE_ASSERT( cpu_gpu_timer_scope, 0x20 );
 
 struct timer_scope : public boost::noncopyable {
-	explicit timer_scope( statistics_float& counter ) :
-		m_counter( counter )
-	{
-		// claude@NOTE: no body compatible with the current timer layout is available.
-		// STATE[STUB]
-	}
+	// declared only, like cpu_gpu_timer_scope
+	explicit timer_scope(
+		statistics_float& counter
+	);
 
-	~timer_scope( )
-	{
-		// claude@NOTE: no body compatible with the current timer layout is available.
-		// STATE[STUB]
-	}
+	~timer_scope( );
+
+
+
+
+
+
 
 	statistics_float&	m_counter;
 	timing::timer		m_cpu_tumer;

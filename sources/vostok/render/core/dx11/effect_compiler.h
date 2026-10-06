@@ -45,8 +45,8 @@ public:
 	typedef vector< texture_query_desc > textures_for_query_type;
 
 public:
-	// claude@NOTE: the developer sources contain a declaration but no body.
-	void set_mapping( ) { /* STATE[STUB] */ }
+	// declared only: retail never defines or calls it
+	void set_mapping( );
 
 	effect_compiler& begin_pass(
 		pcstr vs_name,
@@ -212,14 +212,14 @@ public:
 	}
 
 private:
-	u32 get_sampler( pcstr ) { return 0; }
-	// claude@NOTE: the developer sources contain declarations but no DX11 bodies.
-	void set_samp_texture( u32, pcstr ) { /* STATE[STUB] */ }
-	void set_samp_address( u32, u32 ) { /* STATE[STUB] */ }
-	void set_samp_filter_min( u32, u32 ) { /* STATE[STUB] */ }
-	void set_samp_filter_mip( u32, u32 ) { /* STATE[STUB] */ }
-	void set_samp_filter_mag( u32, u32 ) { /* STATE[STUB] */ }
-	void set_samp_filter( u32, D3D11_FILTER ) { /* STATE[STUB] */ }
+	u32 get_sampler( pcstr );
+	// the sampler helpers are declared only: retail never defines or calls them
+	void set_samp_texture( u32, pcstr );
+	void set_samp_address( u32, u32 );
+	void set_samp_filter_min( u32, u32 );
+	void set_samp_filter_mip( u32, u32 );
+	void set_samp_filter_mag( u32, u32 );
+	void set_samp_filter( u32, D3D11_FILTER );
 
 private:
 	friend class effect_cook;

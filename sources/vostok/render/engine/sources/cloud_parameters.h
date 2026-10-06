@@ -16,11 +16,11 @@ struct cloud_parameters {
 
 	cloud_parameters( ) { }
 
-	void load( configs::binary_config_value const& )
-	{
-		// claude@NOTE: no developer body is available.
-		// STATE[STUB]
-	}
+	// declared only: retail never defines or calls it
+	void load(
+		configs::binary_config_value const&
+	);
+
 
 	u32		grid_width;
 	u32		grid_height;

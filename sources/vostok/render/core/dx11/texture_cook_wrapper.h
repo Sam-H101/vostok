@@ -20,14 +20,14 @@ struct texture_cook_wrapper : public resources::translate_query_cook {
 private:
 	void query_converted_texture( resources::query_result_for_cook* parent );
 	void on_texture_loaded( resources::queries_result& result );
+	// declared only: retail never defines or calls it
 	void make_source_path(
 		fs_new::virtual_path_string*,
 		resources::query_result_for_cook&
-	)
-	{
-		// claude@NOTE: the available developer sources contain only the inverse path.
-		// STATE[STUB]
-	}
+	);
+
+
+
 };
 
 STATIC_SIZE_ASSERT( texture_cook_wrapper, 0x20 );

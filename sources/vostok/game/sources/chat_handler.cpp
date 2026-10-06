@@ -54,7 +54,7 @@ void chat_handler::initialize( resources::unmanaged_resource_ptr const& ui )
 	m_chat_ui = static_cast_resource_ptr< flash_movie_resource_ptr >( ui );
 
 	get_movie( )->movie->SetBackgroundAlpha( 0.f );
-	get_movie( )->movie->SetViewAlignment( flash_movie::Align_TopRight );
+	get_movie( )->movie->SetViewAlignment( flash_movie::Align_TopLeft );
 	get_movie( )->movie->SetViewScaleMode( flash_movie::SM_NoScale );
 	get_movie( )->movie->SetPriority( 30 );
 
@@ -74,11 +74,11 @@ chat_handler::~chat_handler( )
 
 void chat_handler::call( flash_function_handler_params& params )
 {
-	flash_value w_text;
+	flash_value w_text; w_text.SetConvertStringW( );
 	params.pArgs[ 0 ].GetMember( "text", &w_text );
 
 	if( m_game.get_network_client( )->has_bandwidth( ) )
-		m_game.get_network_client( )->messaging_client( ).on_message_typed( w_text.GetStringW( ), messaging::player_general_channel );
+		m_game.get_network_client( )->messaging_client( ).on_message_typed( w_text.GetStringW( ), ( messaging::message_channel_enum )params.pArgs[ 1 ].GetUInt( ) );
 }
 
 void chat_handler::callback(
@@ -92,7 +92,7 @@ void chat_handler::callback(
 		focus( true );
 	else if( strcmp( methodName, "chat_enter_cancel" ) == 0 )
 		focus( false );
-	else if( strcmp( methodName, "set_mouse_cursor" ) == 0 && !m_focused )
+	else if( strcmp( methodName, "set_mouse_cursor" ) == 0 && !m_game_ui_mode )
 		m_game.lobby_menu( ).set_cursor( const_cast< flash_value& >( args[ 0 ] ).GetBool( ) );
 }
 
@@ -238,7 +238,7 @@ void chat_handler::set_mode( bool is_game_mode )
 
 	chat_tab game_menu_tabs[ 2 ] =
 	{
-		{ "st_chat_channel_team",	"White",	is_game_mode ? ( m_game.get_network_client( )->messaging_client( ).local_player_team( ) != team_1 ? 7 : 6 ) : 6,	"/team" },
+		{ "st_chat_channel_team",	"White",	is_game_mode ? ( m_game.get_network_client( )->messaging_client( ).local_player_team( ) != team_1 ? 7 : 6 ) : 9,	"/team" },
 		{ "st_chat_channel_match",	"White",	5,	"/all" },
 	};
 
@@ -275,10 +275,10 @@ void chat_handler::set_mode( bool is_game_mode )
 		chat_tab_member.SetString( current_tabs[ i ].color );
 		chat_tab_value.SetMember( "color", chat_tab_member );
 
-		chat_tab_member.SetInt( current_tabs[ i ].id );
+		chat_tab_member.SetUInt( current_tabs[ i ].id );
 		chat_tab_value.SetMember( "id", chat_tab_member );
 
-		chat_tab_member.SetInt( current_tabs[ i ].id );
+		chat_tab_member.SetUInt( current_tabs[ i ].id );
 		chat_tab_value.SetMember( "icon", chat_tab_member );
 
 		if( strcmp( current_tabs[ i ].key, "" ) != 0 )
@@ -315,7 +315,7 @@ void chat_handler::focus( bool b_focused )
 	if( m_focused == b_focused )
 		return;
 
-	if( m_game_ui_mode || b_focused )
+	if( m_game_ui_mode || !b_focused )
 	{
 		flash_value argument;
 		argument.SetBoolean( b_focused );

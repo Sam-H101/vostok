@@ -49,22 +49,22 @@ struct clouds {
 
 	void set_sun_direction( float3 const& sun_direction );
 
-	void load( configs::binary_config_value const& )
-	{
-		// STATE[STUB]
-	}
+	// load, save, generate_cloud_both: declared only, retail never defines or calls them
+	void load(
+		configs::binary_config_value const&
+	);
 
-	void save( configs::binary_config_value& )
-	{
-		// STATE[STUB]
-	}
+	void save(
+		configs::binary_config_value&
+	);
+
 
 	void generate_cloud_right( u32 key_index );
 
-	void generate_cloud_both( u32, u32 )
-	{
-		// STATE[STUB]
-	}
+	void generate_cloud_both(
+		u32,
+		u32
+	);
 
 	void set_editor_mode( bool value );
 

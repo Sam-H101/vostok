@@ -181,11 +181,16 @@ void n_ary_tree::set_object_transform( n_ary_tree_animation_node& animation_node
 
 void n_ary_tree::set_object_transform( pcvoid const animated_object, float4x4 const& object_transform )
 {
+	if ( !m_weight_root )
+		return;
+
 	for ( n_ary_tree_animation_node* i = m_weight_root; i; i = i->m_next_weight_animation )
 		if ( i->animated_object( ) == animated_object )
 			set_object_transform	( *i );
 
-	animated_object_holder* const j = std::find( m_animated_objects, m_animated_objects + m_animated_objects_count, animated_object );
+	animated_object_holder* const j = std::find(
+		m_animated_objects, m_animated_objects + m_animated_objects_count, animated_object
+	);
 	j->transform				= object_transform;
 }
 
@@ -283,11 +288,11 @@ float n_ary_tree::computed_animation_time(
 	const float					time_scale
 ) const
 {
-	if ( !animation.time_calculator() ) return	animation_time_before_scale_starts + (current_time_in_ms - time_scale_start_time_in_ms)*time_scale/1000.f;
+	if ( !animation.time_calculator() ) return	animation_time_before_scale_starts + (target_time_in_ms - time_scale_start_time_in_ms)*time_scale/1000.f;
 
 	return						animation.time_calculator()(
-										animation_time_before_scale_starts,
 										animation.animation_intervals()->length(),
+										animation_time_before_scale_starts,
 										time_scale_start_time_in_ms,
 										current_time_in_ms,
 										target_time_in_ms,
@@ -338,8 +343,8 @@ void n_ary_tree::update_synchronization_group_using_integration(
 			animation_node,
 			accumulated_animation_time,
 			start_time_in_ms + i*integration_interval_length_in_ms,
-			i < full_intervals_count ? start_time_in_ms + ( i + 1 )*integration_interval_length_in_ms : target_time_in_ms,
 			start_time_in_ms + i*integration_interval_length_in_ms,
+			i < full_intervals_count ? start_time_in_ms + ( i + 1 )*integration_interval_length_in_ms : target_time_in_ms,
 			is_time_scale_node ? time_scale_calculator.time_scale( ) : 1.f
 		);
 		accumulated_animation_time		=
@@ -656,7 +661,7 @@ void n_ary_tree::process_event( n_ary_tree_animation_node& current_animation_nod
 
 		object_movement& accumulated	= state.bone_matrices_computer.accumulated_object_movement;
 		accumulated.translation		= frame_transform.translation - accumulated.translation;
-		accumulated.rotation		= math::quaternion( frame_transform.rotation ) * math::conjugate( accumulated.rotation );
+		accumulated.rotation		= math::conjugate( accumulated.rotation ) * math::quaternion( frame_transform.rotation );
 		accumulated.scale			= frame_transform.scale / accumulated.scale;
 		state.are_there_any_weight_transitions	= true;
 	}
@@ -817,8 +822,8 @@ bool n_ary_tree::dispatch_callbacks(
 				event_channels.get_channel_id( subscribed_channel->channel_id );
 			if ( channel_id == u32( -1 ) )
 				continue;
-			if ( ( generator->channel_ids & ( u8( 1 ) << channel_id ) ) !=
-				 ( u8( 1 ) << channel_id ) )
+			if ( u8( generator->channel_ids & u8( u8( 1 ) << channel_id ) ) !=
+				 u8( u8( 1 ) << channel_id ) )
 				continue;
 
 			event_channel const& channel	= event_channels.channel( channel_id );

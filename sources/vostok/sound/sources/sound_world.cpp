@@ -281,6 +281,14 @@ bool sound_world::initialize_xaudio		( )
 										NULL 
 										);
 	ASSERT						( !FAILED( res ) );
+	// claude@NOTE: run fix, not in retail - a failed mastering voice (device busy or
+	// switching) crashed in voice_factory via master_channels_num( ); run silent instead.
+	if ( FAILED( res ) || !m_master_voice )
+	{
+		LOG_ERROR				( "Sound initialization FAILED. CreateMasteringVoice: 0x%08X", res );
+		m_master_voice			= 0;
+		return					false;
+	}
 
 	m_xaudio->GetDeviceDetails		( preferred_device_id, &deviceDetails );
 	u32 channelMask					= deviceDetails.OutputFormat.dwChannelMask;

@@ -52,21 +52,21 @@ public:
 	bool is_effects_ready( ) const;
 
 private:
-	float evaluate_noise( float, float, u32 )
-	{
-		// STATE[STUB]
-		return 0.0f;
-	}
+	// evaluate_noise, fill_surface, generate_cloud_task: declared only,
+	// retail never defines or calls them
+	float evaluate_noise(
+		float,
+		float,
+		u32
+	);
+	void fill_surface(
+		render_target_ptr
+	);
 
-	void fill_surface( render_target_ptr )
-	{
-		// STATE[STUB]
-	}
+	void generate_cloud_task(
+		u32
+	);
 
-	void generate_cloud_task( u32 )
-	{
-		// STATE[STUB]
-	}
 
 	void fill_cloud_texture( u32 index );
 

@@ -285,8 +285,8 @@ void network_client::process_initialize_victory_items( network_core::packet_read
 
 void network_client::process_base_capture_progress( network_core::packet_reader& packet )
 {
-	const u32 progress = packet.r< u32 >( );
 	const u32 point_id = packet.r< u32 >( );
+	const u32 progress = packet.r< u32 >( );
 	m_game.get_game_world( ).game_ui.set_base_capture_progress( progress, point_id );
 }
 
@@ -323,13 +323,14 @@ static console_commands::cc_float3		cc_warmup_camera_target(
 
 void network_client::setup_camera_for_warmup( )
 {
-	float3 target = m_local_player->get_current( ).transform.transform_position( s_warmup_camera_target );
 	float3 position = m_local_player->get_current( ).transform.transform_position( s_warmup_camera_position );
+	float3 target = m_local_player->get_current( ).transform.transform_position( s_warmup_camera_target );
 
-	float3 direction = position - target;
+	float3 direction = target - position;
 	const float length = direction.length( );
 
-	physics::closest_ray_result ray_result = m_game.get_game_world( ).get_physics_world( )->ray_test( position, -( direction / length ), length, 16, 8 );
+	// the ray runs back from the target; direction stays normalised for the camera
+	physics::closest_ray_result ray_result = m_game.get_game_world( ).get_physics_world( )->ray_test( target, -( direction /= length ), length, 16, 8 );
 	if ( ray_result.object )
 		position = ray_result.hit_point_world + direction * 0.01f;
 
@@ -348,8 +349,10 @@ void network_client::process_game_status( network_core::packet_reader& packet )
 		{
 			ui.show_pregame( false );
 			if ( m_local_player && m_is_time_synchronized_first_time )
+			{
 				ui.show_parametrized_message( "st_start_match_welcome_message", 0, 0, 0 );
-			attach_to_player( player_ptr( ) );
+				attach_to_player( m_local_player );
+			}
 		}
 		else
 		{
@@ -378,35 +381,35 @@ void network_client::process_player_kd_stats( network_core::packet_reader& packe
 // reproduce: packet_reader::r<T> (out-of-line calls vs the target's inlined byte reads),
 // simple_game_project::get_items_container (out-of-line call vs the target's inlined
 // m_victory_items_containers search loop), and inventory_holder::inventory() ([ecx+8] vs
-// call). team_2_points is read for the cursor advance only (recorded as a named local).
-// The add_victory_points sign ( slot ? -1 : 1 ) is CSE'd once in the target but per-arg in
-// the base - an LTCG scheduling artifact, not a structure divergence.
+// call). Packet layout: player id, victory item index, take flag, container id.
 void network_client::process_victory_item_take_or_put( network_core::packet_reader& packet )
 {
-	const s8 team_1_points = packet.r< s8 >( );
-	const s8 team_2_points = packet.r< s8 >( );
+	const u8 player_id = packet.r< u8 >( );
+	const u8 item_index = packet.r< u8 >( );
 
-	const u8 slot = packet.r< u8 >( );
-	const u8 item_id = packet.r< u8 >( );
+	const bool is_take = packet.r< bool >( );
+	const u8 container_id = packet.r< u8 >( );
 
-	if ( slot == 0 && item_id == 0xFF )
+	if ( !is_take && container_id == 0xFF )
 		packet.r< float3 >( );
 
-	victory_item_ptr item = m_game.get_game_world( ).get_victory_items( )[ team_1_points ];
+	victory_item_ptr item = m_game.get_game_world( ).get_victory_items( )[ item_index ];
 
-	victory_items_container_core* current = m_game.get_game_world( ).get_project( )->get_items_container( item_id );
+	victory_items_container_core* current = m_game.get_game_world( ).get_project( )->get_items_container( container_id );
 
 	if ( current )
-		m_game.get_game_world( ).game_ui.add_victory_points(
-			current->team( ) != team_1 ? ( slot ? -1 : 1 ) : 0,
-			current->team( ) != team_2 ? ( slot ? -1 : 1 ) : 0 );
-
-	if ( slot )
 	{
-		get_player( slot )->inventory( ).set_victory_item( item.c_ptr( ) );
+		s8 team_1_points = current->team( ) == team_1 ? ( is_take ? -1 : 1 ) : 0;
+		s8 team_2_points = current->team( ) == team_2 ? ( is_take ? -1 : 1 ) : 0;
+		m_game.get_game_world( ).game_ui.add_victory_points( team_1_points, team_2_points );
+	}
 
-		if ( m_current_player && m_current_player->id == slot )
-			m_game.get_game_world( ).game_ui.show_item_container( slot );
+	if ( is_take )
+	{
+		get_player( player_id )->inventory( ).set_victory_item( item.c_ptr( ) );
+
+		if ( m_current_player && m_current_player->id == player_id )
+			m_game.get_game_world( ).game_ui.show_item_container( player_id );
 
 		if ( !current )
 		{
@@ -418,10 +421,10 @@ void network_client::process_victory_item_take_or_put( network_core::packet_read
 	}
 	else
 	{
-		player_ptr current_player = get_player( slot );
+		player_ptr current_player = get_player( player_id );
 		current_player->inventory( ).set_victory_item( NULL );
 
-		if ( m_current_player && m_current_player->id == slot )
+		if ( m_current_player && m_current_player->id == player_id )
 			m_game.get_game_world( ).game_ui.get_ui( )->movie->Invoke( "root.hide_container_icon", NULL, NULL, 0 );
 
 		if ( !current )
@@ -429,7 +432,7 @@ void network_client::process_victory_item_take_or_put( network_core::packet_read
 			item->set_spotted_to_team( current_player->team( ) );
 
 			float4x4 item_transform = current_player->get_current( ).transform;
-			m_game.get_game_world( ).get_victory_items( )[ team_1_points ]->put(
+			m_game.get_game_world( ).get_victory_items( )[ item_index ]->put(
 				m_game.get_game_world( ).get_physics_world( ), item_transform, m_game.get_game_world( ).get_game( ).scheduler( ) );
 		}
 		else
@@ -439,7 +442,7 @@ void network_client::process_victory_item_take_or_put( network_core::packet_read
 		}
 	}
 
-	m_game.get_game_world( ).game_ui.on_victory_item_put_take( item_id, slot != 0, current != NULL );
+	m_game.get_game_world( ).game_ui.on_victory_item_put_take( player_id, is_take, current != NULL );
 }
 
 void network_client::send_sync_request( )
@@ -458,7 +461,7 @@ void network_client::process_sync_response( network_core::packet_reader& packet 
 
 	m_is_time_synchronized_first_time = true;
 	if ( !m_current_player && m_game_status == game_status_inprocess && m_local_player && m_local_player->is_alive( ) )
-		attach_to_player( player_ptr( ) );
+		attach_to_player( m_local_player );
 
 	const u32 connected_mask = packet.r< u32 >( );
 	for ( u8 i = 0; i < 20; ++i )
@@ -565,7 +568,7 @@ void network_client::tick( const u32 current_time_in_ms, const bool is_game_paus
 				lobby_client( ).connection_info( ).need_resolve =
 					!http_query_server_connection_info( 2 );
 				lobby_resolve_time = current_time_in_ms;
-				LOG_WARNING( "LOBBY: try reconnect" );
+				LOG_INFO( "LOBBY: try reconnect" );
 			}
 		}
 		else
@@ -590,7 +593,7 @@ void network_client::tick( const u32 current_time_in_ms, const bool is_game_paus
 	{
 		m_player_inputs.clear( );
 
-		if ( current_time_in_ms - m_last_send_queued_packets_time_in_ms >= min_time_delta_in_ms )
+		if ( m_last_send_queued_packets_time_in_ms + min_time_delta_in_ms <= current_time_in_ms )
 		{
 			m_last_send_queued_packets_time_in_ms = current_time_in_ms;
 			match_client( ).send_queued_packets( current_time_in_ms );
@@ -613,8 +616,8 @@ void network_client::tick( const u32 current_time_in_ms, const bool is_game_paus
 	if ( m_is_time_synchronized_first_time && current_time_in_ms - m_last_sync_request_time > 4000 )
 		send_sync_request( );
 
-	if ( match_client( ).are_there_any_packets_to_send( ) ||
-		match_client( ).last_send_queed_packets_time_in_ms( ) + min_time_delta_in_ms <= current_time_in_ms )
+	if ( m_match_client.are_there_any_packets_to_send( ) ||
+		m_match_client.last_send_queed_packets_time_in_ms( ) + min_time_delta_in_ms <= current_time_in_ms )
 		match_client( ).send_queued_packets( current_time_in_ms );
 
 	if ( is_game_paused && m_current_player && m_current_player->has_been_inserted( ) )

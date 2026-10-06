@@ -81,7 +81,7 @@ void hand_to_weapon_ik_processor::process( u32 const current_time_in_ms, float4x
 			else
 			{
 				float4x4 const&	target_transform	= get_bone_matrix_in_object_space( m_skeleton->get_bone( h->hand_bone_index ), *m_skeleton, user_matrices );
-				float4x4 const&	hand_transform		= mix_transformations( target_transform, locator_transform, get_hand_coefficient( *h, current_time_in_ms ) );
+				float4x4 const&	hand_transform		= mix_transformations( locator_transform, target_transform, get_hand_coefficient( *h, current_time_in_ms ) );
 				process_hand( *h, hand_transform, user_matrices );
 			}
 		}
@@ -106,15 +106,15 @@ void hand_to_weapon_ik_processor::process_hand( hand_to_weapon_ik_processor::han
 	float4x4						arm_obj_matrix			= get_bone_matrix_in_object_space( arm_bone, *m_skeleton, matrices );
 	float3							arm_pos					= arm_obj_matrix.c.xyz( );
 
-	float const						arm_to_hand_len			= ( arm_pos - target_hand_obj_space_transform.c.xyz( ) ).length( );
+	float const						arm_to_hand_len			= ( target_hand_obj_space_transform.c.xyz( ) - arm_pos ).length( );
 	if ( math::is_zero( arm_to_hand_len, math::epsilon_5 ) )
 		return;
 
-	float3 const&					arm_to_hand_dir			= math::normalize( arm_pos - target_hand_obj_space_transform.c.xyz( ) );
+	float3 const&					arm_to_hand_dir			= math::normalize( target_hand_obj_space_transform.c.xyz( ) - arm_pos );
 
 	float3 const&					original_forearm_pos	= get_bone_matrix_in_object_space( forearm_bone, *m_skeleton, matrices ).c.xyz( );
-	float3 const&					original_forearm_dir	= math::normalize( arm_pos - original_forearm_pos );
-	float3 const&					rotation_axis			= math::normalize( arm_to_hand_dir ^ original_forearm_dir );
+	float3 const&					original_forearm_dir	= math::normalize( original_forearm_pos - arm_pos );
+	float3 const&					rotation_axis			= math::normalize( original_forearm_dir ^ arm_to_hand_dir );
 
 	float const						arm_alpha_angle			= get_angle( arm_len, arm_to_hand_len, forearm_len );
 	float4x4 const&					alpha_rotation_matrix	= math::create_rotation( rotation_axis, arm_alpha_angle );
@@ -126,8 +126,8 @@ void hand_to_weapon_ik_processor::process_hand( hand_to_weapon_ik_processor::han
 	float3							forearm_pos				= forearm_obj_matrix.c.xyz( );
 
 	float3 const&					initial_hand_pos		= forearm_obj_matrix.transform_position( matrices[h.hand_matrix_index].c.xyz( ) );
-	float3 const&					original_arm_dir		= math::normalize( forearm_pos - initial_hand_pos );
-	float3 const&					target_arm_dir			= math::normalize( forearm_pos - target_hand_obj_space_transform.c.xyz( ) );
+	float3 const&					original_arm_dir		= math::normalize( initial_hand_pos - forearm_pos );
+	float3 const&					target_arm_dir			= math::normalize( target_hand_obj_space_transform.c.xyz( ) - forearm_pos );
 	float4x4 const&					forearm_rotation_matrix	= math::get_rotation_matrix( original_arm_dir, target_arm_dir );
 	math::change_matrix_orientation( forearm_rotation_matrix, forearm_obj_matrix );
 
@@ -136,7 +136,7 @@ void hand_to_weapon_ik_processor::process_hand( hand_to_weapon_ik_processor::han
 		matrices[h.hand_matrix_index].c.xyz( )	= math::normalize( matrices[h.hand_matrix_index].c.xyz( ) ) * forearm_len;
 
 	matrices[forearm_matrix_index]	= math::get_relative_matrix( forearm_obj_matrix, arm_obj_matrix );
-	matrices[arm_matrix_index]		= math::get_relative_matrix( get_bone_matrix_in_object_space( *arm_bone.parent( ), *m_skeleton, matrices ), arm_obj_matrix );
+	matrices[arm_matrix_index]		= math::get_relative_matrix( arm_obj_matrix, get_bone_matrix_in_object_space( *arm_bone.parent( ), *m_skeleton, matrices ) );
 }
 
 float hand_to_weapon_ik_processor::get_hand_coefficient( hand_to_weapon_ik_processor::hand const& h, const u32 current_time_in_ms ) const

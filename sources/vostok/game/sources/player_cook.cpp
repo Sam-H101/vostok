@@ -154,7 +154,7 @@ void player_cook::on_subresources_loaded(
 		damage_cfg->get_root( ), params->character_model->m_skeleton, g_allocator );
 
 	fs_new::virtual_path_string							hit_params_config_path;
-	hit_params_config_path.assignf						( "resources/gameplay/hit_params/%s", (pcstr)settings_cfg->get_root( )["hit_params"] );
+	hit_params_config_path.assignf						( "resources/gameplay/hit_params/%s.options", (pcstr)settings_cfg->get_root( )["hit_params"] );
 
 
 	affects_applying_type_enum const affects_applying_type = params->initial_info.profile->is_local ? type_apply_directly : type_read_only;
@@ -277,9 +277,11 @@ void profile_skin_visual_cook::on_configs_loaded(
 		slot_def current_slot_def = body_parts[i];
 		render::skeleton_combined_cook_data::model_def& model_def = cook_data->model_defs[cook_data->models_count];
 		bool has_part = false;
+		u32 dict_id = 0;
 
 		if ( profile->slots[current_slot_def.slot].item.id )
 		{
+			dict_id = profile->slots[current_slot_def.slot].item.dict_id;
 			configs::binary_config_ptr cfg = static_cast_resource_ptr< configs::binary_config_ptr >( data[config_index++].get_unmanaged_resource( ) );
 			current = cfg->get_root( )[
 				current_slot_def.slot == torso_slot ? torso_table_id :
@@ -293,7 +295,8 @@ void profile_skin_visual_cook::on_configs_loaded(
 			has_part = true;
 		}
 
-		path.appendf( "%d_", profile->slots[current_slot_def.slot].item.dict_id );
+		// empty slots contribute "0_" whatever their stale dict_id holds
+		path.appendf( "%d_", dict_id );
 		if ( has_part )
 		{
 			if ( current.value_exists( "base_model_hud" ) && current.value_exists( "part_name_hud" ) )
@@ -321,7 +324,7 @@ void profile_skin_visual_cook::on_configs_loaded(
 
 	resources::query_resource(
 		path.c_str( ),
-		resources::skeleton_combined_model_class,
+		resources::skeleton_combined_model_instance_class,
 		boost::bind( &profile_skin_visual_cook::on_visual_loaded, this, _1, parent, cook_data ),
 		g_allocator,
 		&ud,

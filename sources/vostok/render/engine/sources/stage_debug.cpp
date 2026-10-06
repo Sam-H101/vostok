@@ -3,7 +3,7 @@
 #include <vostok/render/core/backend.h>
 #include <vostok/render/core/effect_manager.h>
 #include <vostok/render/core/options.h>
-
+#include "scene_view.h"
 #include "effect_debug_environment_probe_preview.h"
 #include "environment_probe.h"
 #include "material.h"
@@ -36,7 +36,7 @@ bool stage_debug::is_effects_ready( ) const
 
 void stage_debug::render_environment_probe_preview( )
 {
-	vector<environment_probe*>& probes = m_context->scene( )->environment_probes( );
+	vector<environment_probe*>& probes = m_context->get_scene_view( )->get_visible_environment_probes( );
 
 	environment_probe** it = probes.begin( );
 	environment_probe** end = probes.end( );

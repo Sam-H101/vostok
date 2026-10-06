@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #ifndef VOSTOK_RENDER_CORE_SHADER_CONSTANT_HOST_H_INCLUDED
 #define VOSTOK_RENDER_CORE_SHADER_CONSTANT_HOST_H_INCLUDED
-// claude@NOTE: the available developer sources contain declarations but no bodies for these overloads.
+// the set() overloads are declared only: retail never defines or calls them
 #include <vostok/math_float2.h>
 #include <vostok/math_float3.h>
 #include <vostok/math_float4.h>
@@ -19,13 +19,13 @@ class shader_constant_host {
 public:
 	shader_constant_host( shared_string const& name, enum_constant_type type );
 
-	void set( float ) { /* STATE[STUB] */ }
-	void set( math::float2 const& ) { /* STATE[STUB] */ }
-	void set( math::float3 const& ) { /* STATE[STUB] */ }
-	void set( math::float4 const& ) { /* STATE[STUB] */ }
-	void set( math::float4x4 const& ) { /* STATE[STUB] */ }
-	void set( s32 ) { /* STATE[STUB] */ }
-	void set( math::int2 const& ) { /* STATE[STUB] */ }
+	void set( float );
+	void set( math::float2 const& );
+	void set( math::float3 const& );
+	void set( math::float4 const& );
+	void set( math::float4x4 const& );
+	void set( s32 );
+	void set( math::int2 const& );
 
 	void reset_update_markers( )
 	{

@@ -6,6 +6,10 @@
 #include "profile_player_character.h"
 #include "profile_character.h"
 #include "player.h" // complete type for player_ptr (intrusive_ptr<player>) dtor
+#include "game_project.h"
+#include "game_object_.h"
+#include "render_visual.h"
+#include <vostok/game_core/static_collision.h>
 #include <vostok/animation/mixing_addition_lexeme.h>
 #include <vostok/animation/mixing_animation_lexeme.h>
 #include <vostok/animation/mixing_animation_lexeme_parameters.h>
@@ -21,14 +25,32 @@
 
 namespace survarium {
 
-// STATE[STUB]
-// claude@NOTE: PARKED. Body iterates m_lobby_game_project's scenes / static_collisions
-// (simple_game_project members not declared in our tree) calling scene_renderer::remove_model
-// + static_collision::remove, then releases m_character (profile_player_character) and calls
-// a base_game_scene virtual. Walled by simple_game_project's scene/collision container layout.
-// NEXT: declare simple_game_project's scene_view + static_collision arrays, then reconstruct.
 void lobby_menu::clear_resources( )
 {
+	m_in_destroying = true;
+
+	if ( m_lobby_game_project )
+	{
+		for ( vector< game_object_* >::iterator i = m_lobby_game_project->m_objects.begin( ),
+			e = m_lobby_game_project->m_objects.end( );
+			i != e;
+			++i )
+			( *i )->
+				remove( );
+
+
+		for ( u32 i = 0; i < m_lobby_game_project->m_render_visuals_count; ++i )
+			m_lobby_game_project->m_render_visuals[i].remove( *this );
+
+		for ( u32 i = 0; i < m_lobby_game_project->m_static_collision_objects_count; ++i )
+			m_lobby_game_project->m_static_collision_objects[i].remove( get_physics_world( ) );
+
+
+		m_lobby_game_project = 0;
+		m_character->clear_resources( );
+
+		show_ui( false );
+	}
 }
 
 void lobby_menu::query_scene_resources( )

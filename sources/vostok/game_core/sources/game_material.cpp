@@ -36,10 +36,10 @@ void game_material::load_from_config( configs::binary_config_value const& val )
 	m_mine_can_place				= (bool)val["mine"]["can_place"];
 	m_mine_can_stick				= (bool)val["mine"]["can_stick"];
 
-	if ( (bool)val["mine"]["hittable"] )
+	if ( (bool)val["physic"]["hittable"] )
 		physics_group |= 0x8;
 
-	if ( (bool)val["mine"]["walkable"] )
+	if ( (bool)val["physic"]["walkable"] )
 		physics_group |= 0x2;
 
 	g_material_physics_group[m_id]	= physics_group;
