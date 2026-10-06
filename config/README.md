@@ -10,6 +10,11 @@ reviewed overrides, and ratchets live here. Explanatory prose belongs in
 - `exact_fold_aliases.tsv`, `measured_fold_aliases.tsv`,
   `folded_symbol_overrides.tsv`, and `module_ownership_overrides.tsv` are
   reviewed function-pairing inputs.
+- `geometry_ignores.tsv` lists known PDB line-geometry gaps, with reasons, that no
+  source change can reproduce (retail lines compiled out by `#ifdef`, comments
+  whose text is unknown). `vostok tool geometry` applies and labels them instead
+  of reporting a divergence. Add a row only after laying the source out cannot
+  close the gap.
 
 ## retail/
 

@@ -6,7 +6,10 @@ Each statement record carries a source line, so the relative lines between
 records expose where retail had blank lines, split braces, labels and
 statements that compiled to zero bytes. This view anchors both sides on the
 function's first record and prints our source line at every relative line,
-flagging lines where only one side has a record:
+flagging lines where only one side has a record. Known gaps that no source
+change can reproduce (#ifdef'd retail lines, unrecoverable comments) are listed
+with reasons in config/geometry_ignores.tsv; they are applied, labelled and not
+counted:
 
     python3 -m vostok tool geometry 'find_srgb_format'
     python3 -m vostok tool geometry --rva 0x550560      # pick one of several matches
@@ -25,7 +28,8 @@ from collections import defaultdict
 from pathlib import Path
 
 from vostok.core import log as _log
-from vostok.core.paths import BASE_EVIDENCE, SOURCES, TARGET_EVIDENCE
+from vostok.core import tsv
+from vostok.core.paths import BASE_EVIDENCE, GEOMETRY_IGNORES, SOURCES, TARGET_EVIDENCE
 
 
 def _records(path: Path, where: str, arg) -> list[dict]:
@@ -78,6 +82,58 @@ def _relative(function: dict) -> tuple[int, dict[int, list[int]], dict[str, int]
     return anchor, dict(lines), dict(other)
 
 
+def load_ignores(path: Path, mangled: str) -> list[tuple[int, int, str]]:
+    """This function's (at, lines, reason) gaps, sorted by `at`."""
+    gaps = []
+    if not Path(path).is_file():
+        return gaps
+    for number, fields in tsv.read(path):
+        where = f"geometry: {path}:{number}"
+        if len(fields) != 4:
+            sys.exit(f"{where}: expected function, at, lines, reason")
+        function, at, lines, reason = fields
+        try:
+            at, lines = int(at), int(lines)
+        except ValueError:
+            sys.exit(f"{where}: at and lines must be integers")
+        if lines == 0 or not reason.strip():
+            sys.exit(f"{where}: a gap needs non-zero lines and a reason")
+        if function == mangled:
+            gaps.append((at, lines, reason.strip()))
+    return sorted(gaps)
+
+
+def to_frame(lines: dict[int, list[int]], gaps: list[tuple[int, int, str]], span: range):
+    """Map our relative lines into retail's frame through the known gaps.
+
+    Returns ({frame line: sizes}, {frame line: our line}, {frame line: gap reason},
+    [(our line, reason, sizes) skipped by a negative gap]).
+    """
+    framed, ours_at, reasons, skipped = {}, {}, {}, []
+    for r in span:
+        shift, skip = 0, None
+        for at, n, reason in gaps:
+            if n > 0 and r >= at:
+                shift += n
+            elif n < 0 and at <= r < at - n:
+                skip = reason
+            elif n < 0 and r >= at - n:
+                shift += n
+        if skip is not None:
+            if r in lines:
+                skipped.append((r, skip, lines[r]))
+            continue
+        ours_at[r + shift] = r
+        if r in lines:
+            framed[r + shift] = lines[r]
+    for at, n, reason in gaps:
+        if n > 0:
+            start = at + sum(m for a, m, _ in gaps if a < at)
+            for frame in range(start, start + n):
+                reasons[frame] = reason
+    return framed, ours_at, reasons, skipped
+
+
 # Line flags are geometry divergences; "bytes" only marks the next step's work.
 DIVERGENT = ("retail only", "ours only", "records")
 
@@ -109,26 +165,36 @@ def main() -> int:
     target, base = _select(args.function, args.rva)
     _, t_lines, t_other = _relative(target)
     b_anchor, b_lines, b_other = _relative(base)
+    gaps = load_ignores(GEOMETRY_IGNORES, base["mangled"])
+    span = range(min(b_lines, default=0), max(b_lines, default=0) + 1)
+    framed, ours_at, reasons, skipped = to_frame(b_lines, gaps, span)
     source_path = SOURCES / base["file"]
     source = source_path.read_text(errors="replace").splitlines() if source_path.is_file() else []
     stale = source_path.is_file() and source_path.stat().st_mtime > BASE_EVIDENCE.stat().st_mtime
 
     print(f"{target['name']}\n  retail {target['file']}  ours {base['file']} (line {b_anchor} = +0)")
+    if gaps:
+        print(f"  {len(gaps)} known gap(s) from {GEOMETRY_IGNORES.name} applied")
     if stale:
         print("  note: the source is newer than our build's evidence - rebuild for an exact overlay")
-    print()
-    print(f"{'rel':>5} | {'retail':>10} | {'ours':>10} | source")
-    rows = geometry_rows(t_lines, b_lines)
+    print(f"\n{'rel':>5} | {'retail':>10} | {'ours':>10} | source")
+    rows = geometry_rows(t_lines, framed)
     for rel, t, b, flag in rows:
-        number = b_anchor + rel
-        text = source[number - 1].rstrip() if 0 < number <= len(source) else ""
+        if rel in reasons and not t:
+            text, flag = f"(known gap: {reasons[rel]})", ""
+        else:
+            number = b_anchor + ours_at[rel] if rel in ours_at else None
+            text = source[number - 1].rstrip() if number and 0 < number <= len(source) else ""
         marker = f"   <- {flag}" if flag else ""
         print(f"{rel:>+5} | {_sizes(t):>10} | {_sizes(b):>10} | {text}{marker}")
     for side, other in (("retail", t_other), ("ours", b_other)):
         for file, count in sorted(other.items()):
             print(f"  {side}: {count} record(s) attributed to {file}")
+    for r, reason, sizes in skipped:
+        print(f"  ours +{r}: {_sizes(sizes)} sits inside the known gap '{reason}'")
 
     divergent = [(rel, flag) for rel, _, _, flag in rows if flag in DIVERGENT]
+    divergent += [(r, "record in a known gap") for r, _, _ in skipped]
     differing = sum(1 for row in rows if row[3] == "bytes")
     if not divergent:
         print(f"\nGEOMETRY MATCH ({sum(len(v) for v in t_lines.values())} records"

@@ -60,6 +60,8 @@ REPO = _find_repo()
 SCRIPTS = REPO / "scripts"
 SOURCES = REPO / "sources"
 CONFIG = REPO / "config"
+# known retail line-geometry gaps vostok tool geometry must not report
+GEOMETRY_IGNORES = CONFIG / "geometry_ignores.tsv"
 CODEX_WALL_REVIEWS = CONFIG / "codex_wall_reviews.tsv"
 DOCS = REPO / "docs"
 # Recovered HLSL shader sources (the tree the shipped blobs' dependency tables
