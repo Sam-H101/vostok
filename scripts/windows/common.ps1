@@ -16,6 +16,11 @@ $Toolchain  = if ($env:VOSTOK_WIN_TOOLCHAIN) { $env:VOSTOK_WIN_TOOLCHAIN } else 
 $LogDir     = Join-Path $NativeDir 'logs'
 $Vcproj2NinjaDir = Join-Path $NativeDir 'vcproj2ninja'
 $Vcproj2Ninja    = Join-Path $Vcproj2NinjaDir 'bin\vcproj2ninja.exe'
+# native scoring preview (setup.ps1 -Scoring, score.ps1)
+$ScoringBin = Join-Path $NativeDir 'scoring\bin'
+$LlvmMingw  = Join-Path $NativeDir 'llvm-mingw'
+$LlvmMingwRelease = '20260922'
+$LlvmMingwSha256  = 'E3AD77D117A4BEA19A7A3B333341824D79A5A371004A10E25B8504E7B3047666'
 $NinjaDir   = Join-Path $BuildRoot 'binaries\ninja'
 $ExeTarget  = 'survarium_-_PC_-_DirectX_11'
 $ExeDir     = Join-Path $BuildRoot 'binaries\Win32'

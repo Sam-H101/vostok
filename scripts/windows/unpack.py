@@ -15,7 +15,18 @@ def main() -> None:
     dest.mkdir(parents=True, exist_ok=True)
     if src.suffix == ".zip":
         with zipfile.ZipFile(src) as z:
-            z.extractall(dest)
+            for info in z.infolist():
+                parts = Path(info.filename).parts[strip:]
+                if not parts:
+                    continue
+                out = dest.joinpath(*parts)
+                if info.is_dir():
+                    out.mkdir(parents=True, exist_ok=True)
+                    continue
+                out.parent.mkdir(parents=True, exist_ok=True)
+                with z.open(info) as source, open(out, "wb") as sink:
+                    while chunk := source.read(1 << 20):
+                        sink.write(chunk)
         return
     with tarfile.open(src) as t:
         members = []
