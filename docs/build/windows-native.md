@@ -214,6 +214,9 @@ identical to a Wine graph rewritten to `C:\survarium`. The clangd inputs
     up to `-Attempts` (3). Only the link step reruns.
   - `relink.ps1` reruns just the exe link with `/ERRORREPORT:NONE` and prints its CPU every 30 s,
     for when you want to look at the link directly.
+- **Moving the toolchain.** Precompiled headers record the include paths they were built
+  with; after moving `binaries\windows\toolchain` (or changing `VOSTOK_WIN_TOOLCHAIN`), run
+  `build.ps1 -Clean` or every TU fails with `sourceannotations.h` redefinitions.
 - **mspdbsrv.** `build.ps1` stops the toolchain's `mspdbsrv.exe` when it finishes, so the next
   build does not inherit a server that holds stale PDB handles.
 - **VC90 CRT.** `cl.exe`, `c1xx.dll`, `c2.dll` and `link.exe` request `Microsoft.VC90.CRT`
