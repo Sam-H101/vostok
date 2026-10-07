@@ -272,12 +272,8 @@ void weapon::load_weapon(
 	m_user_animations_selector.logic( ).add_state( preview );
 }
 
-// claude@NOTE: structure faithful (static add, if-guard, the two returns exactly as the target
-// records lines 290/292/293/296+298+296). The target keeps BOTH return paths fully expanded with
-// duplicated epilogues (frame sub esp,0xC8, a float4x4 stack temp per branch) so each return body
-// + its `}` epilogue is a distinct statement (6 stmts); our build cross-jump/tail-merges the two
-// returns through a shared final mul4x3 (`jmp short .3`) into a tighter frame (sub esp,0x80),
-// collapsing to 4 statements. Tail-merge / epilogue-sharing codegen difference, not source-steerable.
+// The float4x4 operators, not nested mul4x3 calls: they make the compiler finish the inner
+// product before pushing the outer operands, which keeps retail's two return epilogues.
 float4x4 weapon::calculate_locator(
 	render::model_locator_item const&		locator,
 	float4x4 const*							matrices,
@@ -287,10 +283,10 @@ float4x4 weapon::calculate_locator(
 	static float4x4 add = math::create_rotation_y( math::pi );
 
 	if ( locator.m_bone == 0xffff )
-		return math::mul4x3( math::mul4x3( add, locator.m_offset ), get_transform( ) );
+		return add * locator.m_offset * get_transform( );
 
-	return math::mul4x3( math::mul4x3( math::mul4x3( add, locator.m_offset ), matrices[ locator.m_bone ] ),
-		get_transform( ) );
+	return add * locator.m_offset * matrices[ locator.m_bone ] *
+		get_transform( );
 
 }
 
